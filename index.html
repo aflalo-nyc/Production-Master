@@ -1,0 +1,2091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFLALO — Production Master</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+:root {
+  --cream: #F7F5F0;
+  --ivory: #FAFAF8;
+  --ink: #1A1A18;
+  --ink-mid: #3D3D3B;
+  --ink-light: #8A8A86;
+  --ink-xlight: #C4C4BF;
+  --border: #E2E0DA;
+  --border-light: #EDEBE6;
+  --gold: #B8A882;
+  --late-red: #8B2E2E;
+  --late-bg: #F9F0F0;
+  --open-blue: #1C3A5C;
+  --open-bg: #F0F4F9;
+  --complete-green: #2C5C3A;
+  --complete-bg: #F0F5F1;
+  --upcoming-amber: #6B4A1A;
+  --upcoming-bg: #FBF7EE;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  background: var(--ivory);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── NAV ─────────────────────────────────────── */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--ivory);
+  border-bottom: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  height: 56px;
+}
+.nav-brand {
+  font-family: 'EB Garamond', serif;
+  font-size: 18px; font-weight: 400;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--ink);
+}
+.nav-brand span { font-size: 9px; letter-spacing: 0.35em; color: var(--ink-light); display: block; margin-top: 1px; font-family: 'Jost', sans-serif; font-weight: 200; text-transform: uppercase; }
+.nav-links { display: flex; gap: 0; }
+.nav-link {
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--ink-mid); cursor: pointer;
+  padding: 0 18px; height: 56px; display: flex; align-items: center;
+  border-bottom: 1.5px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  background: none; border-top: none; border-left: none; border-right: none;
+  font-family: 'Jost', sans-serif; font-weight: 300;
+}
+.nav-link:hover { color: var(--ink); }
+.nav-link.active { color: var(--ink); border-bottom-color: var(--ink); }
+.nav-actions { display: flex; gap: 8px; align-items: center; }
+.btn { font-family: 'Jost', sans-serif; font-size: 10px; font-weight: 300; letter-spacing: 0.2em; text-transform: uppercase; padding: 8px 18px; cursor: pointer; transition: all 0.15s; border: none; }
+.btn-ghost { background: transparent; border: 0.5px solid var(--border); color: var(--ink); }
+.btn-ghost:hover { background: var(--cream); }
+.btn-dark { background: var(--ink); color: var(--ivory); border: 0.5px solid var(--ink); }
+.btn-dark:hover { background: var(--ink-mid); }
+.btn-dark:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── SHELL ───────────────────────────────────── */
+.shell { display: flex; height: calc(100vh - 56px); }
+
+/* ── SIDEBAR ─────────────────────────────────── */
+.sidebar {
+  width: 210px; flex-shrink: 0;
+  border-right: 0.5px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+.sidebar-section { padding: 20px 0; border-bottom: 0.5px solid var(--border-light); }
+.sidebar-label {
+  font-size: 8.5px; letter-spacing: 0.4em; text-transform: uppercase;
+  color: var(--ink-light); padding: 0 20px 10px;
+}
+.sidebar-nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 20px; cursor: pointer;
+  font-size: 11px; letter-spacing: 0.1em;
+  color: var(--ink-mid); transition: background 0.12s;
+  border-left: 2px solid transparent;
+}
+.sidebar-nav-item i { font-size: 14px; opacity: 0.6; }
+.sidebar-nav-item:hover { background: var(--cream); }
+.sidebar-nav-item.active { border-left-color: var(--ink); color: var(--ink); background: var(--cream); }
+.sidebar-nav-item.active i { opacity: 1; }
+
+.vendor-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 20px; cursor: pointer;
+  font-size: 11.5px; letter-spacing: 0.07em;
+  color: var(--ink-mid); transition: background 0.12s;
+  border-left: 2px solid transparent;
+}
+.vendor-item:hover { background: var(--cream); }
+.vendor-item.active { border-left-color: var(--ink); color: var(--ink); background: var(--cream); }
+.vendor-badge {
+  font-size: 9px; color: var(--ink-light);
+  background: var(--border-light); padding: 1px 7px;
+  border: 0.5px solid var(--border);
+}
+.vendor-item-name { flex: 1; }
+.vendor-item-actions { display: none; gap: 2px; }
+.vendor-item:hover .vendor-item-actions { display: flex; }
+.vendor-ico { background:none; border:none; cursor:pointer; color:var(--ink-light); padding:2px 4px; font-size:13px; line-height:1; }
+.vendor-ico:hover { color:var(--ink); }
+.vendor-add {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 20px; cursor: pointer;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-light);
+}
+.vendor-add:hover { color: var(--ink); }
+
+/* ── MAIN ────────────────────────────────────── */
+.main { flex: 1; overflow-y: auto; }
+
+/* ── DASHBOARD ───────────────────────────────── */
+.dash-hero {
+  position: relative; overflow: hidden;
+  background: var(--ink);
+  min-height: 360px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+}
+.dash-hero-grid {
+  position: absolute; inset: 0;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1px; opacity: 0.55;
+}
+.dash-hero-grid .cell {
+  background-size: cover; background-position: center;
+  transition: opacity 0.4s;
+}
+.dash-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(20,20,18,0.88) 0%, rgba(20,20,18,0.3) 60%, rgba(20,20,18,0.15) 100%);
+}
+.dash-hero-content {
+  position: relative; z-index: 2;
+  padding: 48px 40px 40px;
+}
+.dash-hero-eyebrow {
+  font-size: 9px; letter-spacing: 0.45em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 12px;
+}
+.dash-hero-title {
+  font-family: 'EB Garamond', serif;
+  font-size: 48px; font-weight: 400;
+  color: var(--ivory); line-height: 1.05; letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+.dash-hero-title em { font-style: italic; }
+.dash-hero-sub {
+  font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+  color: rgba(250,250,248,0.55);
+}
+
+/* ── STAT CARDS ──────────────────────────────── */
+.dash-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-bottom: 0.5px solid var(--border);
+}
+.stat-card {
+  padding: 28px 28px 24px;
+  border-right: 0.5px solid var(--border);
+  cursor: pointer; transition: background 0.15s;
+}
+.stat-card:last-child { border-right: none; }
+.stat-card:hover { background: var(--cream); }
+.stat-card.active { background: var(--cream); }
+.stat-eyebrow {
+  font-size: 8px; letter-spacing: 0.4em; text-transform: uppercase;
+  color: var(--ink-light); margin-bottom: 12px;
+}
+.stat-num {
+  font-family: 'EB Garamond', serif;
+  font-size: 44px; font-weight: 400; line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-num.late { color: var(--late-red); }
+.stat-num.open { color: var(--open-blue); }
+.stat-num.complete { color: var(--complete-green); }
+.stat-num.upcoming { color: var(--upcoming-amber); }
+.stat-label { font-size: 10px; letter-spacing: 0.12em; color: var(--ink-light); }
+.stat-pill {
+  display: inline-block; font-size: 8px; letter-spacing: 0.15em;
+  text-transform: uppercase; padding: 2px 8px; margin-top: 8px;
+  border: 0.5px solid currentColor;
+}
+.pill-late { color: var(--late-red); background: var(--late-bg); }
+.pill-open { color: var(--open-blue); background: var(--open-bg); }
+.pill-complete { color: var(--complete-green); background: var(--complete-bg); }
+.pill-upcoming { color: var(--upcoming-amber); background: var(--upcoming-bg); }
+
+/* ── DASH FILTER TABS ────────────────────────── */
+.dash-filter-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--ivory);
+}
+.dash-tabs { display: flex; }
+.dash-tab {
+  font-size: 9.5px; letter-spacing: 0.22em; text-transform: uppercase;
+  padding: 14px 18px; cursor: pointer;
+  color: var(--ink-light); border-bottom: 1.5px solid transparent;
+  background: none; border-top: none; border-left: none; border-right: none;
+  font-family: 'Jost', sans-serif; font-weight: 300;
+  transition: color 0.15s;
+}
+.dash-tab:hover { color: var(--ink); }
+.dash-tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+.dash-sort {
+  font-size: 9px; letter-spacing: 0.2em; color: var(--ink-light);
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ── DASH PO LIST ────────────────────────────── */
+.dash-po-list { padding: 0 28px 48px; }
+.dash-po-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 110px 120px 130px 110px 120px;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 0.5px solid var(--border-light);
+  transition: background 0.1s;
+  cursor: default;
+}
+.dash-po-row:hover { background: var(--cream); margin: 0 -28px; padding: 14px 28px; }
+.dash-po-head {
+  display: grid;
+  grid-template-columns: 180px 1fr 110px 120px 130px 110px 120px;
+  gap: 12px;
+  padding: 10px 0 8px;
+  border-bottom: 0.5px solid var(--border);
+}
+.dash-head-cell {
+  font-size: 8px; letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--ink-light);
+}
+.po-vendor-tag {
+  font-size: 10px; letter-spacing: 0.12em;
+  color: var(--ink-mid); font-weight: 400;
+}
+.po-name-cell { font-family: 'EB Garamond', serif; font-size: 14px; font-style: italic; }
+.po-date-cell { font-size: 11px; color: var(--ink-mid); }
+.po-units-cell { font-family: 'EB Garamond', serif; font-size: 15px; }
+.status-pill {
+  display: inline-block; font-size: 8px; letter-spacing: 0.15em;
+  text-transform: uppercase; padding: 3px 10px;
+  border: 0.5px solid currentColor;
+}
+.s-open { color: var(--open-blue); background: var(--open-bg); }
+.s-late { color: var(--late-red); background: var(--late-bg); }
+.s-complete { color: var(--complete-green); background: var(--complete-bg); }
+.s-upcoming { color: var(--upcoming-amber); background: var(--upcoming-bg); }
+.row-actions { display: flex; gap: 4px; justify-content: flex-end; }
+.ico-btn {
+  background: transparent; border: none; cursor: pointer;
+  color: var(--ink-light); padding: 5px 6px; font-size: 15px; line-height: 1;
+}
+.ico-btn:hover { color: var(--ink); }
+
+/* ── PO COMMENTS ─────────────────────────────── */
+.po-comment-bar {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0 4px;
+  border-top: 0.5px solid var(--border-light);
+  margin-top: 10px;
+}
+.po-comment-icon { font-size: 13px; color: var(--gold); flex-shrink: 0; margin-top: 1px; }
+.po-comment-text {
+  font-size: 11px; color: var(--ink-mid); line-height: 1.5;
+  font-style: italic; flex: 1;
+  font-family: 'EB Garamond', serif;
+}
+.po-comment-edit-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 11px; color: var(--ink-light); flex-shrink: 0;
+  padding: 0 4px; font-family: 'Jost', sans-serif;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.po-comment-edit-btn:hover { color: var(--ink); }
+.po-comment-inline {
+  width: 100%; font-family: 'Jost', sans-serif; font-size: 11px;
+  font-weight: 300; padding: 8px 10px; border: 0.5px solid var(--gold);
+  background: var(--cream); color: var(--ink); outline: none;
+  resize: vertical; min-height: 52px; line-height: 1.5;
+  margin-top: 2px;
+}
+.po-has-comment { color: var(--gold) !important; }
+.dash-upcoming { padding: 28px 28px 0; }
+.section-title {
+  font-family: 'EB Garamond', serif;
+  font-size: 22px; font-weight: 400; font-style: italic;
+  letter-spacing: 0.04em; margin-bottom: 20px;
+  display: flex; align-items: baseline; gap: 12px;
+}
+.section-title small {
+  font-family: 'Jost', sans-serif; font-size: 9px;
+  letter-spacing: 0.3em; color: var(--ink-light); font-style: normal;
+}
+.upcoming-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: var(--border);
+  border: 0.5px solid var(--border);
+  margin-bottom: 32px;
+}
+.upcoming-card {
+  background: var(--ivory); padding: 20px 22px;
+  cursor: pointer; transition: background 0.15s;
+}
+.upcoming-card:hover { background: var(--cream); }
+.uc-vendor { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.uc-name { font-family: 'EB Garamond', serif; font-size: 15px; font-style: italic; margin-bottom: 6px; }
+.uc-po { font-size: 10px; color: var(--ink-light); letter-spacing: 0.1em; margin-bottom: 12px; }
+.uc-date-label { font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 4px; }
+.uc-date { font-family: 'EB Garamond', serif; font-size: 18px; }
+.uc-date.overdue { color: var(--late-red); }
+.uc-date.soon { color: var(--upcoming-amber); }
+
+/* ── PO MANAGER VIEW ─────────────────────────── */
+.main-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px; border-bottom: 0.5px solid var(--border);
+  position: sticky; top: 0; background: var(--ivory); z-index: 10;
+}
+.vendor-title {
+  font-family: 'EB Garamond', serif;
+  font-size: 20px; font-weight: 400; font-style: italic; letter-spacing: 0.04em;
+}
+.po-list { padding: 0 28px 48px; }
+.po-card { border-bottom: 0.5px solid var(--border-light); padding: 18px 0; }
+.po-card.is-complete { opacity: 0.55; }
+.po-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+.po-card-title { font-family: 'EB Garamond', serif; font-size: 16px; font-weight: 400; letter-spacing: 0.06em; display: flex; align-items: center; gap: 10px; }
+.po-card-meta { font-size: 11px; color: var(--ink-light); letter-spacing: 0.08em; margin-top: 4px; }
+.po-card-actions { display: flex; gap: 4px; align-items: center; }
+.tbl-wrap { overflow-x: auto; }
+table.po-tbl { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: auto; }
+table.po-tbl th { font-family: 'Jost', sans-serif; font-size: 8px; font-weight: 300; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink-light); padding: 8px 8px; text-align: left; border-bottom: 0.5px solid var(--border); white-space: nowrap; }
+table.po-tbl td { padding: 8px 8px; font-size: 11px; border-bottom: 0.5px solid var(--border-light); color: var(--ink); vertical-align: top; word-break: break-word; }
+table.po-tbl td.sz, table.po-tbl td.units-cell { white-space: nowrap; }
+table.po-tbl tbody tr:last-child td { border-bottom: none; }
+table.po-tbl tbody tr:hover td { background: var(--cream); }
+.nm { font-family: 'EB Garamond', serif; font-size: 13px; font-style: italic; }
+.art { color: var(--ink-light); font-size: 10px; white-space: normal; word-break: break-word; }
+.sz { text-align: center; }
+.sz-zero { color: var(--ink-xlight); }
+.units-cell { font-family: 'EB Garamond', serif; font-size: 15px; text-align: center; }
+.cat-tag { font-size: 8.5px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-light); border: 0.5px solid var(--border); padding: 2px 7px; display: inline-block; }
+.sum-row { background: var(--cream); padding: 9px 28px; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-light); display: flex; gap: 24px; border-top: 0.5px solid var(--border); }
+.sum-row b { color: var(--ink); font-weight: 400; }
+.empty-state { text-align: center; padding: 80px 24px; }
+.empty-state .eg { font-family: 'EB Garamond', serif; font-size: 40px; font-style: italic; color: var(--ink-xlight); }
+.empty-state .eh { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--ink-light); margin-top: 10px; }
+
+/* ── MODALS ──────────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(20,20,18,0.4);
+  align-items: center; justify-content: center; padding: 24px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--ivory); border: 0.5px solid var(--border);
+  padding: 32px 32px 28px; width: 100%; max-width: 600px;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal h2 { font-family: 'EB Garamond', serif; font-size: 22px; font-weight: 400; letter-spacing: 0.04em; margin-bottom: 22px; }
+.form-row { display: flex; gap: 14px; margin-bottom: 14px; }
+.form-col { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.form-col label { font-size: 8.5px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-light); }
+.form-col input, .form-col select {
+  font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 300;
+  padding: 9px 11px; border: 0.5px solid var(--border);
+  background: var(--ivory); color: var(--ink); outline: none; width: 100%;
+}
+.form-col input:focus { border-color: var(--ink); }
+.sz-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 16px; }
+.sz-col { display: flex; flex-direction: column; gap: 6px; }
+.sz-col label { font-size: 8.5px; letter-spacing: 0.2em; color: var(--ink-light); text-align: center; }
+.sz-col input { font-family: 'Jost', sans-serif; font-size: 12px; padding: 8px 6px; border: 0.5px solid var(--border); background: var(--ivory); color: var(--ink); outline: none; width: 100%; text-align: center; }
+.modal-actions { display: flex; gap: 10px; margin-top: 22px; justify-content: flex-end; }
+.section-lbl { font-size: 8.5px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 10px; }
+.rows-section { border: 0.5px solid var(--border); margin-bottom: 14px; }
+.row-entry { display: flex; align-items: center; padding: 9px 12px; gap: 8px; border-bottom: 0.5px solid var(--border-light); }
+.row-entry:last-child { border-bottom: none; }
+.row-entry span { font-size: 11px; font-family: 'EB Garamond', serif; font-style: italic; flex: 1; }
+.add-row-btn { font-family: 'Jost', sans-serif; font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-mid); background: transparent; border: 0.5px dashed var(--border); padding: 9px; width: 100%; cursor: pointer; margin-bottom: 14px; }
+.add-row-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ── ATTACHMENT ──────────────────────────────── */
+.attach-zone {
+  border: 0.5px dashed var(--border);
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: border-color 0.15s, background 0.15s;
+}
+.attach-zone:hover { border-color: var(--ink); background: var(--cream); }
+.attach-zone-text { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-light); }
+.attach-zone-text b { color: var(--ink); font-weight: 400; }
+.attach-existing {
+  border: 0.5px solid var(--border);
+  padding: 11px 14px;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--cream);
+}
+.attach-filename { font-size: 11px; font-family: 'EB Garamond', serif; font-style: italic; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.attach-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.attach-btn { font-family: 'Jost', sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; padding: 5px 12px; cursor: pointer; border: none; }
+.attach-btn-view { background: var(--ink); color: var(--ivory); }
+.attach-btn-view:hover { background: var(--ink-mid); }
+.attach-btn-remove { background: transparent; border: 0.5px solid var(--border); color: var(--ink-light); }
+.attach-btn-remove:hover { color: var(--late-red); border-color: var(--late-red); }
+.po-has-attachment { color: var(--gold); font-size: 13px; }
+/* ── TO-DO BOARD ─────────────────────────────── */
+.dash-todo-section { padding: 24px 28px 0; }
+.todo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1px; background: var(--border); border: 0.5px solid var(--border); margin-bottom: 0; }
+.todo-card { background: var(--ivory); padding: 16px 18px 14px; transition: background 0.15s; }
+.todo-card:hover { background: var(--cream); }
+.todo-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.todo-vendor { font-size: 8.5px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--gold); }
+.todo-po { font-family: 'EB Garamond', serif; font-size: 14px; font-style: italic; color: var(--ink); }
+.todo-comment {
+  font-family: 'EB Garamond', serif; font-size: 13px; font-style: italic;
+  color: var(--ink-mid); line-height: 1.55;
+  border-left: 2px solid var(--gold); padding-left: 10px;
+  white-space: pre-wrap;
+}
+.todo-editor { margin-top: 8px; }
+
+/* ── DASH COMMENT ROW ────────────────────────── */
+.dash-comment-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 28px; background: rgba(184,168,130,0.06);
+  border-top: 0.5px solid var(--border-light);
+}
+.dash-comment-text {
+  flex: 1; font-family: 'EB Garamond', serif; font-size: 12.5px;
+  font-style: italic; color: var(--ink-mid); line-height: 1.5;
+  white-space: pre-wrap;
+}
+.dash-comment-edit {
+  background: none; border: none; cursor: pointer; flex-shrink: 0;
+  font-family: 'Jost', sans-serif; font-size: 9px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-light); padding: 2px 0;
+}
+.dash-comment-edit:hover { color: var(--ink); }
+.dash-comment-editor {
+  background: var(--cream); padding: 10px 28px;
+  border-top: 0.5px solid var(--border-light);
+}
+.dash-comment-input {
+  width: 100%; font-family: 'Jost', sans-serif; font-size: 11px;
+  font-weight: 300; padding: 8px 10px; border: 0.5px solid var(--gold);
+  background: var(--ivory); color: var(--ink); outline: none;
+  resize: vertical; min-height: 52px; line-height: 1.5; display: block;
+}
+.vendor-cost-section { padding: 24px 28px 0; }
+.vendor-cost-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:1px; background:var(--border); border:0.5px solid var(--border); margin-bottom:0; }
+.vendor-cost-card { background:var(--ivory); padding:18px 20px 16px; cursor:pointer; transition:background 0.15s; }
+.vendor-cost-card:hover { background:var(--cream); }
+.vc-name { font-size:8.5px; letter-spacing:0.35em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+.vc-amount { font-family:'EB Garamond',serif; font-size:22px; font-weight:400; color:var(--ink); line-height:1.2; }
+.vc-amount-eur { font-family:'EB Garamond',serif; font-size:16px; color:var(--ink-mid); margin-top:2px; }
+.vc-meta { font-size:9px; letter-spacing:0.1em; color:var(--ink-light); margin-top:8px; }
+.vc-no-price { font-family:'EB Garamond',serif; font-size:15px; font-style:italic; color:var(--ink-xlight); }
+/* ── PER-STYLE ROWS ──────────────────────────── */
+.dash-po-block { border-bottom:0.5px solid var(--border-light); }
+.dash-po-block .dash-po-row { border-bottom:none; }
+.dash-styles-container { border-top:0.5px solid var(--border-light); background:var(--cream); }
+.dash-styles-head { display:grid; grid-template-columns:110px 1fr 90px 90px 90px 60px 36px; gap:10px; padding:6px 28px; font-size:7.5px; letter-spacing:0.28em; text-transform:uppercase; color:var(--ink-light); border-bottom:0.5px solid var(--border); }
+.dash-style-row { display:grid; grid-template-columns:110px 1fr 90px 90px 90px 60px 36px; gap:10px; align-items:center; padding:9px 28px; border-bottom:0.5px solid var(--border-light); }
+.dash-style-row:last-child { border-bottom:none; }
+.dash-style-row:hover { background:var(--border-light); }
+.style-row-received { opacity:0.4; }
+.style-rcv-btn { background:none; border:none; cursor:pointer; padding:3px 5px; font-size:15px; line-height:1; color:var(--ink-light); }
+.style-rcv-btn:hover { color:var(--complete-green); }
+.style-rcv-btn.is-received { color:var(--complete-green); }
+.style-rcv-btn.is-received:hover { color:var(--late-red); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    AFLALO
+    <span>Production Master</span>
+  </div>
+  <div class="nav-links">
+    <button class="nav-link active" id="nav-dash" onclick="showView('dashboard')">Dashboard</button>
+    <button class="nav-link" id="nav-pos" onclick="showView('po-manager')">PO Manager</button>
+  </div>
+  <div class="nav-actions">
+    <button class="btn btn-ghost" onclick="openVendorModal()"><i class="ti ti-folder-plus" style="font-size:12px;margin-right:5px;"></i>New Vendor</button>
+    <button class="btn btn-dark" id="new-po-btn" onclick="openPoModal()" disabled><i class="ti ti-plus" style="font-size:12px;margin-right:5px;"></i>New PO</button>
+  </div>
+</nav>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Views</div>
+      <div class="sidebar-nav-item active" id="snav-dash" onclick="showView('dashboard')">
+        <i class="ti ti-layout-dashboard"></i> Dashboard
+      </div>
+      <div class="sidebar-nav-item" id="snav-pos" onclick="showView('po-manager')">
+        <i class="ti ti-files"></i> All POs
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Data</div>
+      <div class="sidebar-nav-item" onclick="exportData()" style="color:var(--gold);">
+        <i class="ti ti-database-export"></i> Export Backup
+      </div>
+      <div class="sidebar-nav-item" onclick="importDataPick()" style="color:var(--gold);">
+        <i class="ti ti-database-import"></i> Import Backup
+      </div>
+    </div>
+    <div class="sidebar-section" style="flex:1;">
+      <div class="sidebar-label">Vendors</div>
+      <div id="vendor-list"></div>
+      <div class="vendor-add" onclick="openVendorModal()">
+        <i class="ti ti-plus" style="font-size:13px;"></i> Add vendor
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="main-area">
+  </main>
+</div>
+
+<!-- VENDOR MODAL -->
+<div class="modal-overlay" id="vendor-modal">
+  <div class="modal">
+    <h2 id="vendor-modal-title">New Vendor Folder</h2>
+    <input type="hidden" id="v-original-name">
+    <div class="form-row">
+      <div class="form-col">
+        <label>Vendor Name</label>
+        <input id="v-name" type="text" placeholder="e.g. AGAMODA">
+      </div>
+      <div class="form-col">
+        <label>Location / Notes (optional)</label>
+        <input id="v-notes" type="text" placeholder="e.g. Italy, leather goods">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('vendor-modal')">Cancel</button>
+      <button class="btn btn-dark" id="vendor-modal-save-btn" onclick="saveVendor()">Create Folder</button>
+    </div>
+  </div>
+</div>
+
+<!-- PO MODAL -->
+<div class="modal-overlay" id="po-modal">
+  <div class="modal" style="max-width:660px;">
+    <h2 id="po-modal-title">New Purchase Order</h2>
+    <div class="form-row">
+      <div class="form-col">
+        <label>PO Number</label>
+        <input id="po-num" type="text" placeholder="e.g. 10432">
+      </div>
+      <div class="form-col">
+        <label>Ex-Factory Date (MM/DD/YY)</label>
+        <input id="po-date" type="text" placeholder="e.g. 7/22/26">
+      </div>
+      <div class="form-col">
+        <label>Category</label>
+        <input id="po-cat" type="text" placeholder="e.g. Leather">
+      </div>
+    </div>
+    <div class="form-row" style="margin-bottom:16px;">
+      <div class="form-col">
+        <label>Comments / Notes <span style="font-size:8px;letter-spacing:0.15em;color:var(--ink-light);">MISSING INFO · FOLLOW UPS · REMINDERS</span></label>
+        <textarea id="po-comments" placeholder="e.g. Missing fabric swatch, confirm with factory by Friday..." style="font-family:'Jost',sans-serif;font-size:12px;font-weight:300;padding:9px 11px;border:0.5px solid var(--border);background:var(--ivory);color:var(--ink);outline:none;width:100%;resize:vertical;min-height:64px;line-height:1.5;"></textarea>
+      </div>
+    </div>
+    <div class="section-lbl">Line Items</div>
+    <div class="rows-section" id="line-rows"></div>
+    <button class="add-row-btn" onclick="addLineRow()"><i class="ti ti-plus"></i> Add style</button>
+    <div class="section-lbl" style="margin-top:6px;">Attached Document</div>
+    <div id="po-attachment-area" style="margin-bottom:14px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('po-modal')">Cancel</button>
+      <button class="btn btn-dark" onclick="savePO()">Save PO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROW MODAL -->
+<div class="modal-overlay" id="row-modal">
+  <div class="modal" style="max-width:620px;">
+    <h2 id="row-modal-title">Add Style</h2>
+    <div class="form-row">
+      <div class="form-col" style="flex:1.2">
+        <label>SKU</label>
+        <input id="r-sku" type="text" placeholder="OF003-391-229">
+      </div>
+      <div class="form-col" style="flex:2">
+        <label>Style Name</label>
+        <input id="r-name" type="text" placeholder="Quinn Jacket in Shearling">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-col" style="flex:2">
+        <label>Art # / Fabric</label>
+        <input id="r-art" type="text" placeholder="Fabric. LAMB POMPEI 0.8-0.9 THICKNESS">
+      </div>
+      <div class="form-col">
+        <label>Color</label>
+        <input id="r-color" type="text" placeholder="BLACK">
+      </div>
+      <div class="form-col" style="flex:0.5">
+        <label>Currency</label>
+        <select id="r-currency" style="font-family:'Jost',sans-serif;font-size:12px;font-weight:300;padding:9px 11px;border:0.5px solid var(--border);background:var(--ivory);color:var(--ink);outline:none;width:100%;cursor:pointer;">
+          <option value="USD">$ USD</option>
+          <option value="EUR">&#x20AC; EUR</option>
+        </select>
+      </div>
+      <div class="form-col" style="flex:0.8">
+        <label>Unit Price</label>
+        <input id="r-price" type="number" min="0" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+    <div class="section-lbl" style="margin-top:4px;">Size Breakdown</div>
+    <div class="form-row" style="margin-bottom:10px;">
+      <div class="form-col" style="flex:0.8">
+        <label>Sizing Type</label>
+        <select id="r-sizetype" onchange="updateSizeLabels()" style="font-family:'Jost',sans-serif;font-size:12px;font-weight:300;padding:9px 11px;border:0.5px solid var(--border);background:var(--ivory);color:var(--ink);outline:none;width:100%;cursor:pointer;">
+          <option value="numeric">Numeric (0, 2, 4, 6, 8)</option>
+          <option value="alpha">Alpha (XS, S, M, L, XL)</option>
+          <option value="denim">Denim (24, 25, 26, 27, 28, 29, 30)</option>
+        </select>
+      </div>
+    </div>
+    <div class="sz-grid" id="sz-grid-container" style="grid-template-columns:repeat(5,1fr);">
+      <div class="sz-col"><label id="lbl-s0">0 / XS</label><input id="s0" type="number" min="0" placeholder="0" oninput="calcUnits()"></div>
+      <div class="sz-col"><label id="lbl-s2">2 / S</label><input id="s2" type="number" min="0" placeholder="0" oninput="calcUnits()"></div>
+      <div class="sz-col"><label id="lbl-s4">4 / M</label><input id="s4" type="number" min="0" placeholder="0" oninput="calcUnits()"></div>
+      <div class="sz-col"><label id="lbl-s6">6 / L</label><input id="s6" type="number" min="0" placeholder="0" oninput="calcUnits()"></div>
+      <div class="sz-col"><label id="lbl-s8">8 / XL</label><input id="s8" type="number" min="0" placeholder="0" oninput="calcUnits()"></div>
+      <div class="sz-col" id="sz-col-29" style="display:none;"><label id="lbl-s29">29</label><input id="s29" type="number" min="0" placeholder="0" oninput="calcUnits()"></div>
+      <div class="sz-col" id="sz-col-30" style="display:none;"><label id="lbl-s30">30</label><input id="s30" type="number" min="0" placeholder="0" oninput="calcUnits()"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-col">
+        <label>Total Units <span style="font-size:8px;letter-spacing:0.2em;color:var(--gold);">AUTO</span></label>
+        <input id="r-units" type="number" min="0" placeholder="0" readonly style="background:var(--cream);color:var(--ink-mid);cursor:default;">
+      </div>
+      <div class="form-col">
+        <label>Ex-Factory Date (style-specific)</label>
+        <input id="r-exf" type="text" placeholder="e.g. 7/22/26 — overrides PO date">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('row-modal')">Cancel</button>
+      <button class="btn btn-dark" onclick="saveRow()">Add Style</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let state = {
+  vendors: {},
+  activeVendor: null,
+  editPoIdx: null,
+  editRowIdx: null,
+  pendingRows: [],
+  currentView: 'dashboard',
+  dashFilter: 'all'
+};
+
+function save(){ try{ localStorage.setItem('pom4', JSON.stringify(state)); }catch(e){} }
+function load(){
+  try{
+    let d = localStorage.getItem('pom4');
+    if(!d) d = localStorage.getItem('pom3');
+    if(!d) d = localStorage.getItem('pom2');
+    if(!d) d = localStorage.getItem('pom');
+    if(d){ const p=JSON.parse(d); state.vendors=p.vendors||{}; state.dashFilter=p.dashFilter||'all'; save(); }
+  }catch(e){}
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify({vendors:state.vendors,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='AFLALO_Backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+}
+function importDataPick(){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
+  inp.onchange=e=>{
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const p=JSON.parse(ev.target.result);
+        if(!p.vendors) throw new Error('Invalid backup — no vendors found.');
+        const vc=Object.keys(p.vendors).length;
+        const pc=Object.values(p.vendors).reduce((s,v)=>s+(v.pos||[]).length,0);
+        if(!confirm('Import '+vc+' vendor(s) and '+pc+' PO(s)?\nThis will replace your current data.')) return;
+        state.vendors=p.vendors; state.dashFilter='all'; save();
+        renderSidebar(); showView('dashboard');
+      }catch(err){ alert('Import failed: '+err.message); }
+    };
+    reader.readAsText(file);
+  };
+  inp.click();
+}
+
+// ─── SEED DATA ────────────────────────────────────────────────────────────────
+load();
+if(!Object.keys(state.vendors).length){
+  state.vendors['AGAMODA'] = { notes:'Leather goods', pos:[
+    {
+      num:'10432', date:'7/31/26', category:'Leather', status:'open',
+      rows:[
+        {sku:'OL009-392-001', name:'Flint Jacket in Leather',    art:'Bonded LAMB POMPEI 0.8-0.9 THICKNESS', color:'Black',    priceCurrency:'EUR', price:498.00, s0:8,s2:9,s4:2,s6:1,s8:0, units:20, exf:''},
+        {sku:'OF003-391-229', name:'Quinn Jacket in Shearling',   art:'Leather + Shearling 0.8-0.9 THICKNESS', color:'Black',   priceCurrency:'EUR', price:349.00, s0:8,s2:9,s4:2,s6:1,s8:0, units:20, exf:''},
+      ]
+    },
+    {
+      num:'10432', date:'8/25/26', category:'Leather', status:'open',
+      rows:[
+        {sku:'IJ001-392-141', name:'Obel Jacket in Leather',      art:'LAMB POMPEI 0.8-0.9 THICKNESS', color:'Burgundy', priceCurrency:'EUR', price:304.00, s0:8,s2:9,s4:2,s6:1,s8:0, units:20, exf:''},
+        {sku:'OL017-392-001', name:'Sevryn Jacket',                art:'LAMB POMPEI 0.8-0.9 THICKNESS', color:'Black',    priceCurrency:'EUR', price:339.00, s0:8,s2:9,s4:2,s6:1,s8:0, units:20, exf:''},
+        {sku:'BL001-393-001', name:'Lazare Trouser in Leather',    art:'LAMB POMPEI 0.8-0.9 THICKNESS', color:'Black',    priceCurrency:'EUR', price:219.00, s0:5,s2:7,s4:5,s6:2,s8:1, units:20, exf:''},
+      ]
+    },
+  ]};
+  save();
+}
+
+// ─── DATE UTILS ───────────────────────────────────────────────────────────────
+function parseDate(str){
+  if(!str || !str.trim()) return null;
+  const parts = str.trim().split('/');
+  if(parts.length !== 3) return null;
+  let [m,d,y] = parts.map(Number);
+  if(!m||!d||!y) return null;
+  if(y < 100) y += 2000;
+  const dt = new Date(y, m-1, d);
+  if(dt.getFullYear()!==y || dt.getMonth()!==m-1 || dt.getDate()!==d) return null;
+  return dt;
+}
+
+// Effective EXF: earliest per-style exf if any set, else PO-level date
+function effectiveExfDate(po){
+  const rows = po.rows || [];
+  const styleDates = rows.map(r=>r.exf&&r.exf.trim()?parseDate(r.exf):null).filter(Boolean);
+  if(styleDates.length) return styleDates.reduce((a,b)=>a<b?a:b);
+  return parseDate(po.date);
+}
+
+function todayMidnight(){ return new Date(new Date().setHours(0,0,0,0)); }
+
+function isLate(po){
+  if(po.status === 'complete') return false;
+  const d = effectiveExfDate(po);
+  if(!d) return false;
+  return d < todayMidnight();
+}
+function isUpcoming(po){
+  if(po.status === 'complete') return false;
+  const d = effectiveExfDate(po);
+  if(!d) return false;
+  const now = todayMidnight();
+  const soon = new Date(now); soon.setDate(soon.getDate()+30);
+  return d >= now && d <= soon;
+}
+function poStatus(po){
+  if(po.status === 'complete') return 'complete';
+  if(isLate(po)) return 'late';
+  if(isUpcoming(po)) return 'upcoming';
+  return 'open';
+}
+function daysUntil(po){
+  const d = effectiveExfDate(po);
+  if(!d) return null;
+  return Math.round((d - todayMidnight()) / 86400000);
+}
+
+// ─── ALL POs FLAT ─────────────────────────────────────────────────────────────
+function allPos(){
+  const list = [];
+  Object.keys(state.vendors).forEach(v=>{
+    (state.vendors[v].pos||[]).forEach((po,pi)=>{
+      list.push({ vendor:v, po, pi, status: poStatus(po) });
+    });
+  });
+  return list;
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+// Unsplash editorial fashion images (free to use)
+const heroImages = [
+  'https://aflalonyc.com/cdn/shop/files/Aflalo_SS26_campaign_72dpi_Image_2621_1.jpg?crop=center&height=800&width=600',
+  'https://aflalonyc.com/cdn/shop/files/Aflalo_SS26_campaign_72dpi_Image_2614.jpg?crop=center&height=800&width=600',
+  'https://aflalonyc.com/cdn/shop/files/AFLALO_ECOM26_SHOT_23_MIRAJACKET_CANARD_755_V02_c5edef0d-dec6-42a9-af2c-23c4b174f202.jpg?crop=center&height=800&width=600',
+  'https://aflalonyc.com/cdn/shop/files/Aflalo_SS26_campaign_72dpi_Image_42.jpg?crop=center&height=800&width=600',
+];
+
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function renderDashboard(){
+  const pos = allPos();
+  const late = pos.filter(x=>x.status==='late');
+  const open = pos.filter(x=>x.status==='open');
+  const complete = pos.filter(x=>x.status==='complete');
+  const upcoming = pos.filter(x=>x.status==='upcoming');
+  let filter = state.dashFilter || 'all';
+
+  let filtered;
+  if(filter==='late') filtered = late;
+  else if(filter==='open') filtered = open;
+  else if(filter==='complete') filtered = complete;
+  else if(filter==='upcoming') filtered = upcoming;
+  else filtered = pos;
+
+  const upcomingCards = pos.filter(x=>x.status==='upcoming'||x.status==='late').sort((a,b)=>{
+    const da = parseDate(a.po.date)||new Date(9999,0,1);
+    const db = parseDate(b.po.date)||new Date(9999,0,1);
+    return da - db;
+  }).slice(0,6);
+
+  const gridCells = heroImages.map(url=>'<div class="cell" style="background-image:url(\''+url+'\')"></div>').join('');
+
+  const statCards = [
+    { key:'open',     num: open.length,     label:'Open POs',      note: open.reduce((s,x)=>s+(x.po.rows||[]).reduce((a,r)=>a+(parseInt(r.units)||0),0),0)+' units', cls:'open',     pill:'pill-open' },
+    { key:'late',     num: late.length,     label:'Late POs',      note: 'Past ex-factory',        cls:'late',     pill:'pill-late' },
+    { key:'upcoming', num: upcoming.length, label:'Due in 30 Days',note: 'Upcoming ex-factory',    cls:'upcoming', pill:'pill-upcoming' },
+    { key:'complete', num: complete.length, label:'Received',      note: 'Completed POs',          cls:'complete', pill:'pill-complete' },
+  ];
+
+  const statsHtml = statCards.map(s=>
+    '<div class="stat-card'+(filter===s.key?' active':'')+'" onclick="setDashFilter(\''+s.key+'\')">'+
+    '<div class="stat-eyebrow">'+s.label+'</div>'+
+    '<div class="stat-num '+s.cls+'">'+s.num+'</div>'+
+    '<div class="stat-label">'+s.note+'</div>'+
+    '<span class="stat-pill '+s.pill+'">'+s.label+'</span>'+
+    '</div>'
+  ).join('');
+
+  // ── VENDOR COST CARDS ────────────────────────────────────────────────
+  var vendorCostHtml = '';
+  var vnames = Object.keys(state.vendors);
+  if(vnames.length){
+    var vcCards = vnames.map(function(vn){
+      var openRows = (state.vendors[vn].pos||[])
+        .filter(function(po){ return poStatus(po)!=='complete'; })
+        .reduce(function(acc, po){ return acc.concat((po.rows||[]).filter(function(r){ return r.styleStatus!=='received'; })); }, []);
+      var usd = openRows.filter(function(r){ return (r.priceCurrency||'USD')==='USD'&&r.price!=null; }).reduce(function(s,r){ return s+(parseFloat(r.price)||0)*(parseInt(r.units)||0); },0);
+      var eur = openRows.filter(function(r){ return r.priceCurrency==='EUR'&&r.price!=null; }).reduce(function(s,r){ return s+(parseFloat(r.price)||0)*(parseInt(r.units)||0); },0);
+      var openPOs = (state.vendors[vn].pos||[]).filter(function(po){ return poStatus(po)!=='complete'; }).length;
+      var hasCost = usd>0||eur>0;
+      return '<div class="vendor-cost-card" onclick="goToPO(\''+vn+'\')">'+
+        '<div class="vc-name">'+vn+'</div>'+
+        (hasCost
+          ?(usd>0?'<div class="vc-amount">$'+usd.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>':'')
+           +(eur>0?'<div class="vc-amount'+(usd>0?'-eur':'')+'">&#x20AC;'+eur.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>':'')
+          :'<div class="vc-no-price">No prices set</div>')+
+        '<div class="vc-meta">'+openPOs+' open PO'+(openPOs!==1?'s':'')+' &nbsp;&middot;&nbsp; '+openRows.reduce(function(s,r){ return s+(parseInt(r.units)||0); },0)+' units</div>'+
+      '</div>';
+    }).join('');
+    vendorCostHtml = '<div class="vendor-cost-section">'+
+      '<div class="section-title" style="margin-bottom:14px;">Open Order Value <small>By Vendor &middot; Unreceived Styles</small></div>'+
+      '<div class="vendor-cost-grid">'+vcCards+'</div></div>';
+  }
+
+  // ── TO-DO BOARD ──────────────────────────────────────────────────────
+  var todoBoardHtml = '';
+  var todoPOs = allPos().filter(function(x){ return x.po.comments && x.po.comments.trim(); });
+  if(todoPOs.length){
+    var todoCards = todoPOs.map(function(item){
+      var v=item.vendor, po=item.po, pi=item.pi, status=item.status;
+      var sClass={open:'s-open',late:'s-late',complete:'s-complete',upcoming:'s-upcoming'}[status]||'s-open';
+      var du=daysUntil(po);
+      var duStr=du===null?'':du<0?'<span style="color:var(--late-red);">'+Math.abs(du)+'d overdue</span>':du===0?'<span style="color:var(--upcoming-amber);">Today</span>':'<span style="color:var(--ink-light);">in '+du+'d</span>';
+      return '<div class="todo-card" id="todo-'+v+'-'+pi+'">'
+        +'<div class="todo-card-header">'
+          +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+            +'<span class="todo-vendor">'+v+'</span>'
+            +'<span class="todo-po">PO '+po.num+'</span>'
+            +'<span class="status-pill '+sClass+'" style="font-size:7px;padding:2px 7px;">'+status.toUpperCase()+'</span>'
+            +(duStr?'<span style="font-size:9px;letter-spacing:0.05em;">'+duStr+'</span>':'')
+          +'</div>'
+          +'<div style="display:flex;gap:4px;">'
+            +'<button class="ico-btn" title="Edit comment" onclick="toggleTodoEditor(\''+v+'\','+pi+')" style="font-size:13px;color:var(--gold);"><i class="ti ti-edit"></i></button>'
+            +'<button class="ico-btn" title="Go to PO" onclick="goToPO(\''+v+'\')" style="font-size:13px;"><i class="ti ti-arrow-right"></i></button>'
+          +'</div>'
+        +'</div>'
+        +'<div class="todo-comment" id="todo-comment-'+v+'-'+pi+'">'+escHtml(po.comments)+'</div>'
+        +'<div class="todo-editor" id="dash-cmtedit2-'+v+'-'+pi+'" style="display:none;">'
+          +'<textarea class="dash-comment-input" id="dash-cmtinput2-'+v+'-'+pi+'" style="margin:0 0 6px;">'+escHtml(po.comments)+'</textarea>'
+          +'<div style="display:flex;gap:6px;">'
+            +'<button class="btn btn-dark" style="font-size:9px;padding:5px 12px;" onclick="saveDashComment2(\''+v+'\','+pi+')">Save</button>'
+            +'<button class="btn btn-ghost" style="font-size:9px;padding:5px 12px;" onclick="toggleTodoEditor(\''+v+'\','+pi+')">Cancel</button>'
+            +'<button class="btn btn-ghost" style="font-size:9px;padding:5px 12px;color:var(--late-red);border-color:var(--late-red);" onclick="clearDashComment(\''+v+'\','+pi+')">Remove</button>'
+          +'</div>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+    todoBoardHtml = '<div class="dash-todo-section">'
+      +'<div class="section-title" style="margin-bottom:14px;"><i class="ti ti-checklist" style="font-size:18px;color:var(--gold);margin-right:8px;vertical-align:middle;"></i>To-Do <small>'+todoPOs.length+' PO'+(todoPOs.length!==1?'s':'')+' with notes</small></div>'
+      +'<div class="todo-grid">'+todoCards+'</div>'
+    +'</div>';
+  }
+
+  const headHtml =
+    '<div class="dash-po-head">'+
+    '<div class="dash-head-cell">Vendor</div>'+
+    '<div class="dash-head-cell">PO</div>'+
+    '<div class="dash-head-cell">Category</div>'+
+    '<div class="dash-head-cell">Ex-Factory</div>'+
+    '<div class="dash-head-cell">Status</div>'+
+    '<div class="dash-head-cell">Units</div>'+
+    '<div class="dash-head-cell" style="text-align:right;">Actions</div>'+
+    '</div>';
+
+  const rowsHtml = filtered.length ? filtered.map(function(item){
+    var v=item.vendor, po=item.po, pi=item.pi, status=item.status;
+    const units = (po.rows||[]).reduce((s,r)=>s+(parseInt(r.units)||0),0);
+    const du = daysUntil(po);
+    const duStr = du===null?'—': du<0?Math.abs(du)+' days ago': du===0?'Today':'in '+du+' days';
+    const sClass = {open:'s-open',late:'s-late',complete:'s-complete',upcoming:'s-upcoming'}[status]||'s-open';
+    const sLabel = {open:'Open',late:'Late',complete:'Received',upcoming:'Upcoming'}[status]||'Open';
+    const rows = po.rows||[];
+    const rcvCount = rows.filter(r=>r.styleStatus==='received').length;
+    const prog = rows.length?rcvCount+'/'+rows.length+' rcv':'';
+
+    const styleRowsHtml = rows.map(function(r,ri){
+      const isRcv = r.styleStatus==='received';
+      const styleExf = r.exf&&r.exf.trim()&&r.exf!==po.date?r.exf:'';
+      return '<div class="dash-style-row'+(isRcv?' style-row-received':'')+'">'
+        +'<div style="font-size:9px;color:var(--ink-light);">'+(r.sku||'')+'</div>'
+        +'<div style="font-family:\'EB Garamond\',serif;font-size:13px;font-style:italic;">'+(r.name||'—')+'</div>'
+        +'<div style="font-size:10px;color:var(--ink-light);">'+(r.color||'')+'</div>'
+        +'<div style="font-size:10px;color:var(--ink-mid);">'+(r.price!=null?fmtPrice(r):'—')+'</div>'
+        +'<div style="font-size:10px;color:var(--upcoming-amber);">'+(styleExf||'')+'</div>'
+        +'<div style="font-family:\'EB Garamond\',serif;font-size:13px;text-align:center;">'+(r.units||0)+'</div>'
+        +'<div style="text-align:right;">'
+          +'<button class="style-rcv-btn'+(isRcv?' is-received':'')+'" title="'+(isRcv?'Undo Received':'Mark Style Received')+'" onclick="toggleStyleReceived(\''+v+'\','+pi+','+ri+',event)">'
+            +'<i class="ti ti-'+(isRcv?'rotate-clockwise':'circle-check')+'"></i>'
+          +'</button>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+
+    return '<div class="dash-po-block">'
+      +'<div class="dash-po-row">'
+        +'<div class="po-vendor-tag">'+v+'</div>'
+        +'<div class="po-name-cell">PO '+po.num+'</div>'
+        +'<div><span class="cat-tag">'+(po.category||'')+'</span></div>'
+        +'<div class="po-date-cell">'+(po.date||'—')+' <span style="font-size:9px;color:var(--ink-light);">('+duStr+')</span></div>'
+        +'<div><span class="status-pill '+sClass+'">'+sLabel+'</span>'+(prog?'<span style="font-size:9px;color:var(--ink-light);margin-left:8px;">'+prog+'</span>':'')+(po.comments&&po.comments.trim()?'<span style="font-size:9px;color:var(--gold);margin-left:8px;"><i class="ti ti-message-2"></i></span>':'')+'</div>'
+        +'<div class="po-units-cell">'+units+'</div>'
+        +'<div class="row-actions">'
+          +'<button class="ico-btn" title="Download PDF" onclick="exportPDFByVendor(\''+v+'\','+pi+')"><i class="ti ti-file-type-pdf"></i></button>'
+          +'<button class="ico-btn" title="Edit PO" onclick="editPO(\''+v+'\','+pi+')"><i class="ti ti-edit"></i></button>'
+          +(status!=='complete'?'<button class="ico-btn" title="Mark All Received" onclick="markComplete(\''+v+'\','+pi+',event)" style="color:var(--complete-green);"><i class="ti ti-circle-check"></i></button>':'<button class="ico-btn" title="Reopen" onclick="markOpen(\''+v+'\','+pi+',event)" style="color:var(--ink-light);"><i class="ti ti-rotate-clockwise"></i></button>')
+          +'<button class="ico-btn" title="Go to Vendor" onclick="goToPO(\''+v+'\')"><i class="ti ti-arrow-right"></i></button>'
+        +'</div>'
+      +'</div>'
+      +(po.comments&&po.comments.trim()
+        ?'<div class="dash-comment-row" id="dash-cmtrow-'+v+'-'+pi+'">'
+          +'<i class="ti ti-message-2" style="font-size:13px;color:var(--gold);flex-shrink:0;"></i>'
+          +'<span class="dash-comment-text">'+escHtml(po.comments)+'</span>'
+          +'<button class="dash-comment-edit" onclick="toggleDashComment(\''+v+'\','+pi+')" title="Edit comment">Edit</button>'
+        +'</div>'
+        :'')
+      +'<div class="dash-comment-editor" id="dash-cmtedit-'+v+'-'+pi+'" style="display:none;">'
+        +'<textarea class="dash-comment-input" id="dash-cmtinput-'+v+'-'+pi+'" placeholder="Add a note — missing info, follow ups, reminders...">'+escHtml(po.comments||'')+'</textarea>'
+        +'<div style="display:flex;gap:8px;margin-top:6px;padding:0 28px 10px;">'
+          +'<button class="btn btn-dark" style="font-size:9px;padding:6px 14px;" onclick="saveDashComment(\''+v+'\','+pi+')">Save</button>'
+          +'<button class="btn btn-ghost" style="font-size:9px;padding:6px 14px;" onclick="toggleDashComment(\''+v+'\','+pi+')">Cancel</button>'
+          +(po.comments&&po.comments.trim()?'<button class="btn btn-ghost" style="font-size:9px;padding:6px 14px;color:var(--late-red);border-color:var(--late-red);" onclick="clearDashComment(\''+v+'\','+pi+')">Remove</button>':'')
+        +'</div>'
+      +'</div>'
+      +(rows.length?
+        '<div class="dash-styles-container">'
+          +'<div class="dash-styles-head"><div>SKU</div><div>Style</div><div>Color</div><div>Price</div><div>EXF</div><div style="text-align:center;">Units</div><div></div></div>'
+          +styleRowsHtml
+        +'</div>'
+        :'')
+      +'</div>';
+  }).join('') : '<div style="padding:32px 0;font-size:11px;color:var(--ink-light);letter-spacing:0.1em;">No POs in this category.</div>';
+
+  const upcomingHtml = upcomingCards.length ? upcomingCards.map(function(item){
+    var v=item.vendor, po=item.po, status=item.status;
+    const du = daysUntil(po);
+    const cls = du!==null && du<0?'overdue': du!==null && du<=14?'soon':'';
+    const duLabel = du===null?'—': du<0?Math.abs(du)+' days overdue': du===0?'Today': du+' days';
+    return '<div class="upcoming-card" onclick="goToPO(\''+v+'\')">'+
+      '<div class="uc-vendor">'+v+'</div>'+
+      '<div class="uc-name">PO '+po.num+'</div>'+
+      '<div class="uc-po">'+po.category+' &nbsp;·&nbsp; '+(po.rows||[]).reduce((s,r)=>s+(parseInt(r.units)||0),0)+' units</div>'+
+      '<div class="uc-date-label">Ex-Factory</div>'+
+      '<div class="uc-date '+cls+'">'+(po.date||'—')+' <span style="font-size:11px;opacity:0.6;">('+duLabel+')</span></div>'+
+    '</div>';
+  }).join('') : '<div class="upcoming-card" style="grid-column:1/-1;text-align:center;color:var(--ink-light);font-size:11px;letter-spacing:0.1em;">No upcoming or late ex-factory dates.</div>';
+
+  document.getElementById('main-area').innerHTML =
+    '<div class="dash-hero">'+
+      '<div class="dash-hero-grid">'+gridCells+'</div>'+
+      '<div class="dash-hero-overlay"></div>'+
+      '<div class="dash-hero-content">'+
+        '<div class="dash-hero-eyebrow">Production Master &nbsp;·&nbsp; '+new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</div>'+
+        '<div class="dash-hero-title"><em>Good '+getGreeting()+',</em><br>AFLALO Production</div>'+
+        '<div class="dash-hero-sub">'+pos.length+' Total POs &nbsp;·&nbsp; '+Object.keys(state.vendors).length+' Vendors &nbsp;·&nbsp; '+pos.reduce((s,x)=>s+(x.po.rows||[]).reduce((a,r)=>a+(parseInt(r.units)||0),0),0)+' Total Units</div>'+
+        '<div style="margin-top:18px;display:flex;gap:10px;">'+
+          '<button onclick="exportData()" style="font-family:\'Jost\',sans-serif;font-size:10px;font-weight:300;letter-spacing:0.18em;text-transform:uppercase;padding:9px 18px;background:rgba(250,250,248,0.12);border:0.5px solid rgba(250,250,248,0.4);color:var(--ivory);cursor:pointer;">&#8595; Export Backup</button>'+
+          '<button onclick="importDataPick()" style="font-family:\'Jost\',sans-serif;font-size:10px;font-weight:300;letter-spacing:0.18em;text-transform:uppercase;padding:9px 18px;background:rgba(184,168,130,0.2);border:0.5px solid rgba(184,168,130,0.6);color:var(--gold);cursor:pointer;">&#8593; Import Backup</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="dash-stats">'+statsHtml+'</div>'+
+    vendorCostHtml+
+    todoBoardHtml+
+    '<div class="dash-filter-bar">'+
+      '<div class="dash-tabs">'+
+        '<button class="dash-tab'+(filter==='all'?' active':'')+'" onclick="setDashFilter(\'all\')">All POs</button>'+
+        '<button class="dash-tab'+(filter==='open'?' active':'')+'" onclick="setDashFilter(\'open\')">Open</button>'+
+        '<button class="dash-tab'+(filter==='late'?' active':'')+'" onclick="setDashFilter(\'late\')">Late</button>'+
+        '<button class="dash-tab'+(filter==='upcoming'?' active':'')+'" onclick="setDashFilter(\'upcoming\')">Upcoming</button>'+
+        '<button class="dash-tab'+(filter==='complete'?' active':'')+'" onclick="setDashFilter(\'complete\')">Received</button>'+
+      '</div>'+
+      '<div class="dash-sort">'+filtered.length+' POs</div>'+
+    '</div>'+
+    '<div class="dash-po-list">'+headHtml+rowsHtml+'</div>'+
+    (upcomingCards.length?
+      '<div class="dash-upcoming">'+
+        '<div class="section-title">Upcoming Ex-Factory <small>Next 30 Days + Late</small></div>'+
+        '<div class="upcoming-grid">'+upcomingHtml+'</div>'+
+      '</div>':''
+    );
+}
+
+
+function getGreeting(){
+  const h = new Date().getHours();
+  return h<12?'morning': h<17?'afternoon':'evening';
+}
+
+function setDashFilter(f){
+  state.dashFilter = f;
+  save();
+  renderDashboard();
+}
+
+// ─── PO MANAGER VIEW ──────────────────────────────────────────────────────────
+function renderPOManager(){
+  const panel = document.getElementById('main-area');
+  const btn = document.getElementById('new-po-btn');
+  if(!state.activeVendor||!state.vendors[state.activeVendor]){
+    btn.disabled = true;
+    panel.innerHTML = '<div class="empty-state"><div class="eg">No vendor selected</div><div class="eh">Choose a vendor folder to view POs</div></div>';
+    return;
+  }
+  btn.disabled = false;
+  const v = state.activeVendor;
+  const vd = state.vendors[v];
+  const pos = vd.pos||[];
+  const total = pos.reduce((s,p)=>s+(p.rows||[]).reduce((a,r)=>a+(parseInt(r.units)||0),0),0);
+
+  let html = '<div class="main-topbar"><div style="display:flex;align-items:center;gap:10px;"><div class="vendor-title">'+v+'</div><button class="ico-btn" title="Edit Vendor" onclick="openEditVendorModal(\''+v+'\',event)" style="font-size:14px;margin-top:2px;"><i class="ti ti-edit"></i></button></div>';
+  if(pos.length) html += '<span style="font-size:11px;color:var(--ink-light);letter-spacing:0.08em;">'+pos.length+' PO'+(pos.length!==1?'s':'')+' &nbsp;&middot;&nbsp; '+total+' total units</span>';
+  html += '</div>';
+
+  if(!pos.length){
+    html += '<div class="empty-state"><div class="eg">No POs yet</div><div class="eh">Click "New PO" to create the first purchase order</div></div>';
+  } else {
+    html += '<div class="po-list">';
+    pos.forEach((po,pi)=>{
+      const rows = po.rows||[];
+      const totalU = rows.reduce((s,r)=>s+(parseInt(r.units)||0),0);
+      const st = poStatus(po);
+      const sClass = {open:'s-open',late:'s-late',complete:'s-complete',upcoming:'s-upcoming'}[st]||'s-open';
+      const sLabel = {open:'Open',late:'Late',complete:'Received',upcoming:'Upcoming'}[st]||'Open';
+      const isComplete = po.status==='complete';
+
+      html += '<div class="po-card'+(isComplete?' is-complete':'')+'">';
+      html += '<div class="po-card-header">';
+      html += '<div>';
+      html += '<div class="po-card-title">PO '+po.num+' <span class="status-pill '+sClass+'">'+sLabel+'</span></div>';
+      html += '<div class="po-card-meta" style="margin-top:5px;">'+rows.length+' style'+(rows.length!==1?'s':'')+' &nbsp;&middot;&nbsp; '+totalU+' units &nbsp;&middot;&nbsp; '+(po.category||'')+' &nbsp;&middot;&nbsp; Ex-Factory: '+(po.date||'&mdash;')+'</div>';
+      html += '</div>';
+      html += '<div class="po-card-actions">';
+      html += '<button class="ico-btn" title="Download PDF" onclick="exportPDFByVendor(\''+v+'\','+pi+')"><i class="ti ti-file-type-pdf"></i></button>';
+      html += '<button class="ico-btn" title="Export CSV" onclick="exportCSV(\''+v+'\','+pi+')"><i class="ti ti-download"></i></button>';
+      const hasAtt = !!(po.attachmentData);
+      html += '<button class="ico-btn '+(hasAtt?'po-has-attachment':'')+'" title="'+(hasAtt?'View / Replace Attachment':'Attach Document')+'" onclick="openAttachModal(\''+v+'\','+pi+',event)"><i class="ti ti-paperclip"></i></button>';
+      const hasComment = !!(po.comments && po.comments.trim());
+      html += '<button class="ico-btn'+(hasComment?' po-has-comment':'')+'" title="'+(hasComment?'Edit Comment':'Add Comment')+'" onclick="toggleInlineComment(\''+v+'\','+pi+')" id="cmtbtn-'+v+'-'+pi+'"><i class="ti ti-message'+(hasComment?'-2':'')+'"></i></button>';
+      if(!isComplete){
+        html += '<button class="ico-btn" title="Mark as Received" onclick="markComplete(\''+v+'\','+pi+',event)" style="color:var(--complete-green);font-size:17px;"><i class="ti ti-circle-check"></i></button>';
+      } else {
+        html += '<button class="ico-btn" title="Reopen PO" onclick="markOpen(\''+v+'\','+pi+',event)" style="color:var(--ink-light);"><i class="ti ti-rotate-clockwise"></i></button>';
+      }
+      html += '<button class="ico-btn" title="Edit PO" onclick="editPO(\''+v+'\','+pi+')"><i class="ti ti-edit"></i></button>';
+      html += '<button class="ico-btn" title="Delete PO" onclick="deletePO('+pi+')"><i class="ti ti-trash"></i></button>';
+      html += '</div></div>';
+
+      if(rows.length){
+        html += '<div class="tbl-wrap"><table class="po-tbl">';
+        // No fixed colgroup — let browser auto-size based on content
+        const allA = rows.every(r=>(r.sizeType||'numeric')==='alpha');
+        const allD = rows.every(r=>(r.sizeType||'numeric')==='denim');
+        const allN = rows.every(r=>(r.sizeType||'numeric')==='numeric');
+        const szHeaders = allA?['XS','S','M','L','XL']: allD?['24','25','26','27','28','29','30']: allN?['0','2','4','6','8']:['0/XS','2/S','4/M','6/L','8/XL'];
+        let thSz = szHeaders.map(s=>'<th style="min-width:36px;text-align:center;">'+s+'</th>').join('');
+        html += '<thead><tr>'
+          +'<th style="min-width:70px;">Vendor</th>'
+          +'<th style="min-width:110px;">SKU</th>'
+          +'<th style="min-width:130px;">Name</th>'
+          +'<th style="min-width:150px;">Art #</th>'
+          +'<th style="min-width:60px;">Category</th>'
+          +'<th style="min-width:60px;">Color</th>'
+          +'<th style="min-width:60px;">Price</th>'
+          +thSz
+          +'<th style="min-width:44px;text-align:center;">Units</th>'
+          +'<th style="min-width:70px;">Ex-Factory</th>'
+          +'<th style="min-width:30px;text-align:center;">Rcv</th>'
+          +'</tr></thead><tbody>';
+        rows.forEach((r,ri)=>{
+          const isRcv = r.styleStatus==='received';
+          const st = r.sizeType||'numeric';
+          const szL = getSizeLabels(st);
+          html += '<tr'+(isRcv?' style="opacity:0.4;"':'')+'>'; 
+          html += '<td>'+v+'</td>';
+          html += '<td style="font-size:10px;color:var(--ink-light);">'+(r.sku||'')+'</td>';
+          html += '<td class="nm">'+(r.name||'')+'<span style="font-family:\'Jost\',sans-serif;font-size:8px;letter-spacing:0.15em;color:var(--ink-light);border:0.5px solid var(--border);padding:1px 5px;margin-left:6px;vertical-align:middle;">'+(r.sizeType==='alpha'?'ALPHA':r.sizeType==='denim'?'DENIM':'NUM')+'</span></td>';
+          html += '<td class="art">'+(r.art||'')+'</td>';
+          html += '<td><span class="cat-tag">'+(po.category||'')+'</span></td>';
+          html += '<td style="font-size:11px;color:var(--ink-mid);">'+(r.color||'')+'</td>';
+          html += '<td style="font-size:11px;color:var(--ink-mid);">'+(r.price!=null?fmtPrice(r):'—')+'</td>';
+          const isDenim = (r.sizeType||'numeric')==='denim';
+          html += '<td class="sz '+((!r.s0)?'sz-zero':'')+'" title="'+szL[0]+'">'+(r.s0||'&mdash;')+'</td>';
+          html += '<td class="sz '+((!r.s2)?'sz-zero':'')+'" title="'+szL[1]+'">'+(r.s2||'&mdash;')+'</td>';
+          html += '<td class="sz '+((!r.s4)?'sz-zero':'')+'" title="'+szL[2]+'">'+(r.s4||'&mdash;')+'</td>';
+          html += '<td class="sz '+((!r.s6)?'sz-zero':'')+'" title="'+szL[3]+'">'+(r.s6||'&mdash;')+'</td>';
+          html += '<td class="sz '+((!r.s8)?'sz-zero':'')+'" title="'+szL[4]+'">'+(r.s8||'&mdash;')+'</td>';
+          if(isDenim){
+            html += '<td class="sz '+((!r.s29)?'sz-zero':'')+'" title="29">'+(r.s29||'&mdash;')+'</td>';
+            html += '<td class="sz '+((!r.s30)?'sz-zero':'')+'" title="30">'+(r.s30||'&mdash;')+'</td>';
+          }
+          html += '<td class="units-cell">'+(r.units||'&mdash;')+'</td>';
+          // Per-style EXF: show style date if set, else fall back to PO date
+          const styleExf = r.exf && r.exf.trim();
+          const poExf    = po.date || '';
+          const showExf  = styleExf || poExf;
+          const isOverride = styleExf && styleExf !== poExf;
+          html += '<td style="font-size:10px;color:'+(isOverride?'var(--upcoming-amber)':'var(--ink-mid)')+';">'
+            + showExf+(isOverride?' <span style="font-size:8px;opacity:0.7;">(style)</span>':'')+'</td>';
+          const isRcv2 = r.styleStatus==='received';
+          html += '<td style="text-align:center;"><button class="style-rcv-btn'+(isRcv2?' is-received':'')+'" title="'+(isRcv2?'Undo':'Mark Received')+'" onclick="toggleStyleReceived(\''+v+'\','+pi+','+ri+',event)"><i class="ti ti-'+(isRcv2?'rotate-clockwise':'circle-check')+'"></i></button></td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+        const usdCost=rows.filter(r=>r.price!=null&&(r.priceCurrency||'USD')==='USD').reduce((s,r)=>s+(parseFloat(r.price)||0)*(parseInt(r.units)||0),0);
+        const eurCost=rows.filter(r=>r.price!=null&&r.priceCurrency==='EUR').reduce((s,r)=>s+(parseFloat(r.price)||0)*(parseInt(r.units)||0),0);
+        const costStr=[usdCost>0?'$'+usdCost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'',eurCost>0?'\u20AC'+eurCost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):''].filter(Boolean).join(' + ');
+        html += '<div class="sum-row"><span>Total Units: <b>'+totalU+'</b></span><span>Styles: <b>'+rows.length+'</b></span>'+(costStr?'<span>Total Cost: <b>'+costStr+'</b></span>':'')+'<span>Ex-Factory: <b>'+(po.date||'—')+'</b></span></div>';
+      }
+      // Comment section
+      const commentId = 'cmt-'+v+'-'+pi;
+      if(po.comments && po.comments.trim()){
+        html += '<div class="po-comment-bar" id="'+commentId+'-bar">'+
+          '<i class="ti ti-message-2 po-comment-icon"></i>'+
+          '<span class="po-comment-text">'+escHtml(po.comments)+'</span>'+
+          '<button class="po-comment-edit-btn" onclick="toggleInlineComment(\''+v+'\','+pi+')">Edit</button>'+
+        '</div>';
+      }
+      html += '<div id="'+commentId+'-editor" style="display:none;padding:8px 0 4px;">'+
+        '<textarea class="po-comment-inline" id="'+commentId+'-input" placeholder="Add a comment... missing info, follow ups, reminders">'+escHtml(po.comments||'')+'</textarea>'+
+        '<div style="display:flex;gap:8px;margin-top:6px;">'+
+          '<button class="btn btn-dark" style="font-size:9px;padding:6px 14px;" onclick="saveInlineComment(\''+v+'\','+pi+')">Save Comment</button>'+
+          '<button class="btn btn-ghost" style="font-size:9px;padding:6px 14px;" onclick="toggleInlineComment(\''+v+'\','+pi+')">Cancel</button>'+
+          (po.comments?'<button class="btn btn-ghost" style="font-size:9px;padding:6px 14px;color:var(--late-red);border-color:var(--late-red);" onclick="clearComment(\''+v+'\','+pi+')">Remove</button>':'')+
+        '</div>'+
+      '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+  panel.innerHTML = html;
+}
+
+// ─── VIEW SWITCHING ───────────────────────────────────────────────────────────
+function showView(v){
+  state.currentView = v;
+  // nav
+  document.querySelectorAll('.nav-link').forEach(el=>el.classList.remove('active'));
+  document.getElementById('nav-'+( v==='dashboard'?'dash':'pos')).classList.add('active');
+  document.querySelectorAll('.sidebar-nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('snav-'+(v==='dashboard'?'dash':'pos')).classList.add('active');
+  // render
+  if(v==='dashboard') renderDashboard();
+  else renderPOManager();
+}
+
+function goToPO(vendor){
+  state.activeVendor = vendor;
+  renderSidebar();
+  showView('po-manager');
+}
+
+// ─── SIDEBAR ──────────────────────────────────────────────────────────────────
+function renderSidebar(){
+  const vl = document.getElementById('vendor-list');
+  vl.innerHTML = '';
+  Object.keys(state.vendors).forEach(v=>{
+    const pos = state.vendors[v].pos||[];
+    const el = document.createElement('div');
+    el.className = 'vendor-item'+(state.activeVendor===v?' active':'');
+    el.innerHTML =
+      '<span class="vendor-item-name">'+v+'</span>'+
+      '<div class="vendor-item-actions">'+
+        '<button class="vendor-ico" title="Edit Vendor" onclick="openEditVendorModal(\''+v+'\',event)"><i class="ti ti-edit"></i></button>'+
+        '<button class="vendor-ico" title="Delete Vendor" onclick="deleteVendor(\''+v+'\',event)"><i class="ti ti-trash"></i></button>'+
+      '</div>'+
+      '<span class="vendor-badge">'+pos.length+'</span>';
+    el.addEventListener('click', (e)=>{
+      if(e.target.closest('.vendor-item-actions')) return;
+      state.activeVendor=v; renderSidebar(); showView('po-manager');
+    });
+    vl.appendChild(el);
+  });
+}
+
+// ─── COMPLETE / REOPEN ────────────────────────────────────────────────────────
+function markComplete(vendor, pi, e){
+  if(e) e.stopPropagation();
+  state.vendors[vendor].pos[pi].status = 'complete';
+  save();
+  if(state.currentView==='dashboard') renderDashboard(); else renderPOManager();
+}
+function markOpen(vendor, pi, e){
+  if(e) e.stopPropagation();
+  state.vendors[vendor].pos[pi].status = 'open';
+  save();
+  if(state.currentView==='dashboard') renderDashboard(); else renderPOManager();
+}
+function toggleStyleReceived(vendor, pi, ri, e){
+  if(e) e.stopPropagation();
+  const row = state.vendors[vendor].pos[pi].rows[ri];
+  row.styleStatus = (row.styleStatus==='received') ? 'open' : 'received';
+  save();
+  if(state.currentView==='dashboard') renderDashboard(); else renderPOManager();
+}
+function currSym(c){ return c==='EUR'?'\u20AC':'$'; }
+function fmtPrice(r){ if(r.price==null) return '—'; return currSym(r.priceCurrency||'USD')+Number(r.price).toFixed(2); }
+
+// ─── VENDOR / PO CRUD ─────────────────────────────────────────────────────────
+function openVendorModal(){
+  document.getElementById('vendor-modal-title').textContent = 'New Vendor Folder';
+  document.getElementById('vendor-modal-save-btn').textContent = 'Create Folder';
+  document.getElementById('v-name').value='';
+  document.getElementById('v-notes').value='';
+  document.getElementById('v-original-name').value='';
+  openModal('vendor-modal');
+}
+
+function openEditVendorModal(vendorName, e){
+  if(e) e.stopPropagation();
+  document.getElementById('vendor-modal-title').textContent = 'Edit Vendor';
+  document.getElementById('vendor-modal-save-btn').textContent = 'Save Changes';
+  document.getElementById('v-name').value = vendorName;
+  document.getElementById('v-notes').value = state.vendors[vendorName].notes||'';
+  document.getElementById('v-original-name').value = vendorName;
+  openModal('vendor-modal');
+}
+
+function saveVendor(){
+  const newName = document.getElementById('v-name').value.trim().toUpperCase();
+  const notes   = document.getElementById('v-notes').value.trim();
+  const origName = document.getElementById('v-original-name').value.trim().toUpperCase();
+  if(!newName) return;
+
+  if(origName && origName !== newName){
+    // Rename: copy data under new key, delete old key
+    const data = state.vendors[origName];
+    data.notes = notes;
+    state.vendors[newName] = data;
+    delete state.vendors[origName];
+    if(state.activeVendor === origName) state.activeVendor = newName;
+  } else if(origName && origName === newName){
+    // Notes-only edit
+    state.vendors[origName].notes = notes;
+  } else {
+    // New vendor
+    if(!state.vendors[newName]) state.vendors[newName] = {notes, pos:[]};
+    state.activeVendor = newName;
+  }
+
+  save(); closeModal('vendor-modal'); renderSidebar();
+  if(state.currentView==='po-manager') renderPOManager();
+  else renderDashboard();
+}
+
+function deleteVendor(vendorName, e){
+  if(e) e.stopPropagation();
+  const poCount = (state.vendors[vendorName].pos||[]).length;
+  const msg = poCount > 0
+    ? 'Delete vendor "'+vendorName+'" and all '+poCount+' PO(s)? This cannot be undone.'
+    : 'Delete vendor "'+vendorName+'"?';
+  if(!confirm(msg)) return;
+  delete state.vendors[vendorName];
+  if(state.activeVendor === vendorName) state.activeVendor = null;
+  save(); renderSidebar();
+  if(state.currentView==='dashboard') renderDashboard();
+  else renderPOManager();
+}
+
+function openPoModal(editIdx){
+  state.editPoIdx = editIdx!=null?editIdx:null;
+  state.pendingRows = [];
+  state.pendingAttachment = null; // {name, data, type}
+  document.getElementById('po-num').value='';
+  document.getElementById('po-date').value='';
+  document.getElementById('po-cat').value='';
+  document.getElementById('po-comments').value='';
+  document.getElementById('po-modal-title').textContent = editIdx!=null?'Edit Purchase Order':'New Purchase Order';
+  if(editIdx!=null){
+    const po = state.vendors[state.activeVendor].pos[editIdx];
+    document.getElementById('po-num').value = po.num||'';
+    document.getElementById('po-date').value = po.date||'';
+    document.getElementById('po-cat').value = po.category||'';
+    document.getElementById('po-comments').value = po.comments||'';
+    state.pendingRows = JSON.parse(JSON.stringify(po.rows||[]));
+    // Carry existing attachment into pending
+    if(po.attachmentData) state.pendingAttachment = { name: po.attachmentName||'attachment.pdf', data: po.attachmentData, type: po.attachmentType||'application/pdf' };
+  }
+  renderLineRows();
+  renderAttachmentArea();
+  openModal('po-modal');
+}
+
+function editPO(vendor, pi){
+  state.activeVendor = vendor;
+  openPoModal(pi);
+}
+
+function deletePO(pi){
+  if(!confirm('Delete this PO?')) return;
+  state.vendors[state.activeVendor].pos.splice(pi,1);
+  save(); renderPOManager();
+}
+
+function savePO(){
+  const num = document.getElementById('po-num').value.trim();
+  const date = document.getElementById('po-date').value.trim();
+  const cat = document.getElementById('po-cat').value.trim();
+  const comments = document.getElementById('po-comments').value.trim();
+  if(!num) return;
+  const po = {num, date, category:cat, comments, status:'open', rows:JSON.parse(JSON.stringify(state.pendingRows))};
+  // Persist attachment
+  if(state.pendingAttachment){
+    po.attachmentData = state.pendingAttachment.data;
+    po.attachmentName = state.pendingAttachment.name;
+    po.attachmentType = state.pendingAttachment.type;
+  }
+  const vd = state.vendors[state.activeVendor];
+  if(state.editPoIdx!=null){ 
+    po.status = vd.pos[state.editPoIdx].status || 'open';
+    vd.pos[state.editPoIdx]=po; 
+  } else { vd.pos.push(po); }
+  save(); closeModal('po-modal');
+  if(state.currentView==='dashboard') renderDashboard();
+  else renderPOManager();
+}
+
+function renderLineRows(){
+  const c = document.getElementById('line-rows');
+  if(!state.pendingRows.length){
+    c.innerHTML='<div style="padding:12px 14px;font-size:11px;color:var(--ink-light);">No styles added yet</div>';
+    return;
+  }
+  c.innerHTML = state.pendingRows.map((r,i)=>
+    '<div class="row-entry">'+
+    '<span>'+(r.name||r.sku||'Style '+(i+1))+'</span>'+
+    '<span style="font-size:9px;color:var(--ink-light);border:0.5px solid var(--border);padding:1px 6px;letter-spacing:0.12em;">'+(r.sizeType==='alpha'?'ALPHA':'NUMERIC')+'</span>'+
+    '<span style="font-size:10px;color:var(--ink-light);">'+(r.color||'')+'</span>'+
+    (r.price!=null?'<span style="font-size:10px;color:var(--ink-mid);">'+fmtPrice(r)+'</span>':'')+
+    '<span style="font-size:10px;color:var(--ink-light);">'+(r.units||0)+' units</span>'+
+    (r.exf?'<span style="font-size:9px;color:var(--upcoming-amber);letter-spacing:0.05em;">EXF: '+r.exf+'</span>':'')+
+    '<button class="ico-btn" onclick="editRow('+i+')"><i class="ti ti-edit" style="font-size:13px;"></i></button>'+
+    '<button class="ico-btn" onclick="removeRow('+i+')"><i class="ti ti-trash" style="font-size:13px;"></i></button>'+
+    '</div>'
+  ).join('');
+}
+// Size label maps
+const SIZE_LABELS = {
+  numeric: ['0','2','4','6','8'],
+  alpha:   ['XS','S','M','L','XL'],
+  both:    ['0 / XS','2 / S','4 / M','6 / L','8 / XL'],
+  denim:   ['24','25','26','27','28','29','30'],
+};
+function getSizeLabels(type){
+  if(type==='alpha') return SIZE_LABELS.alpha;
+  if(type==='denim') return SIZE_LABELS.denim;
+  return SIZE_LABELS.numeric;
+}
+function updateSizeLabels(){
+  const type = document.getElementById('r-sizetype').value;
+  const grid = document.getElementById('sz-grid-container');
+  const isDenim = type==='denim';
+
+  // Show/hide extra denim columns and adjust grid
+  document.getElementById('sz-col-29').style.display = isDenim ? '' : 'none';
+  document.getElementById('sz-col-30').style.display = isDenim ? '' : 'none';
+  grid.style.gridTemplateColumns = isDenim ? 'repeat(7,1fr)' : 'repeat(5,1fr)';
+
+  // Set labels for first 5 slots
+  const lbls = type==='alpha' ? SIZE_LABELS.alpha : type==='denim' ? SIZE_LABELS.denim : SIZE_LABELS.both;
+  ['s0','s2','s4','s6','s8'].forEach((id,i)=>{
+    document.getElementById('lbl-'+id).textContent = lbls[i];
+  });
+  // Denim slots 6+7
+  if(isDenim){
+    document.getElementById('lbl-s29').textContent = SIZE_LABELS.denim[5];
+    document.getElementById('lbl-s30').textContent = SIZE_LABELS.denim[6];
+  } else {
+    // Clear extra denim inputs when switching away
+    document.getElementById('s29').value = '';
+    document.getElementById('s30').value = '';
+  }
+}
+function calcUnits(){
+  const ids = ['s0','s2','s4','s6','s8','s29','s30'];
+  const total = ids.reduce((sum,id)=>{
+    const el = document.getElementById(id);
+    return sum + (el ? parseInt(el.value)||0 : 0);
+  }, 0);
+  document.getElementById('r-units').value = total || '';
+}
+function addLineRow(){ state.editRowIdx=null; clearRowForm(); openModal('row-modal'); }
+function editRow(i){
+  state.editRowIdx=i;
+  const r=state.pendingRows[i];
+  document.getElementById('r-sku').value   = r.sku   || '';
+  document.getElementById('r-name').value  = r.name  || '';
+  document.getElementById('r-art').value   = r.art   || '';
+  document.getElementById('r-color').value = r.color || '';
+  document.getElementById('r-price').value = r.price != null ? r.price : '';
+  document.getElementById('r-currency').value = r.priceCurrency || 'USD';
+  document.getElementById('r-sizetype').value  = r.sizeType || 'numeric';
+  updateSizeLabels();
+  document.getElementById('s0').value = r.s0 || '';
+  document.getElementById('s2').value = r.s2 || '';
+  document.getElementById('s4').value = r.s4 || '';
+  document.getElementById('s6').value = r.s6 || '';
+  document.getElementById('s8').value = r.s8 || '';
+  document.getElementById('s29').value = r.s29 || '';
+  document.getElementById('s30').value = r.s30 || '';
+  document.getElementById('r-units').value = r.units || '';
+  calcUnits();
+  document.getElementById('r-exf').value   = r.exf   || '';
+  openModal('row-modal');
+}
+function removeRow(i){ state.pendingRows.splice(i,1); renderLineRows(); }
+function clearRowForm(){
+  ['r-sku','r-name','r-art','r-color','r-price','s0','s2','s4','s6','s8','s29','s30','r-units','r-exf'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('r-currency').value='USD';
+  document.getElementById('r-sizetype').value='numeric';
+  updateSizeLabels();
+}
+function saveRow(){
+  const s0=parseInt(document.getElementById('s0').value)||0;
+  const s2=parseInt(document.getElementById('s2').value)||0;
+  const s4=parseInt(document.getElementById('s4').value)||0;
+  const s6=parseInt(document.getElementById('s6').value)||0;
+  const s8=parseInt(document.getElementById('s8').value)||0;
+  const s29=parseInt(document.getElementById('s29').value)||0;
+  const s30=parseInt(document.getElementById('s30').value)||0;
+  const sizeType=document.getElementById('r-sizetype').value||'numeric';
+  const r={
+    sku:document.getElementById('r-sku').value.trim(),
+    name:document.getElementById('r-name').value.trim(),
+    art:document.getElementById('r-art').value.trim(),
+    color:document.getElementById('r-color').value.trim(),
+    price:parseFloat(document.getElementById('r-price').value)||null,
+    priceCurrency:document.getElementById('r-currency').value||'USD',
+    sizeType,
+    s0,s2,s4,s6,s8,s29,s30,
+    units: sizeType==='denim' ? s0+s2+s4+s6+s8+s29+s30 : s0+s2+s4+s6+s8,
+    exf:document.getElementById('r-exf').value.trim(),
+  };
+  if(state.editRowIdx!=null) state.pendingRows[state.editRowIdx]=r;
+  else state.pendingRows.push(r);
+  closeModal('row-modal'); renderLineRows();
+}
+
+// ─── ATTACHMENT ───────────────────────────────────────────────────────────────
+function renderAttachmentArea(){
+  const area = document.getElementById('po-attachment-area');
+  if(!area) return;
+  if(state.pendingAttachment){
+    area.innerHTML =
+      '<div class="attach-existing">'+
+        '<i class="ti ti-file-type-pdf" style="font-size:18px;color:var(--gold);flex-shrink:0;"></i>'+
+        '<span class="attach-filename">'+state.pendingAttachment.name+'</span>'+
+        '<div class="attach-actions">'+
+          '<button class="attach-btn attach-btn-view" onclick="viewPendingAttachment()">View</button>'+
+          '<button class="attach-btn attach-btn-remove" onclick="removePendingAttachment()">Remove</button>'+
+          '<button class="attach-btn attach-btn-view" style="background:var(--ink-light);" onclick="triggerAttachPick()">Replace</button>'+
+        '</div>'+
+      '</div>';
+  } else {
+    area.innerHTML =
+      '<div class="attach-zone" onclick="triggerAttachPick()">'+
+        '<i class="ti ti-file-upload" style="font-size:20px;color:var(--ink-light);"></i>'+
+        '<div class="attach-zone-text"><b>Click to attach</b> a PDF or document for this PO</div>'+
+      '</div>';
+  }
+}
+
+function triggerAttachPick(){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    if(file.size > 10 * 1024 * 1024){ alert('File too large. Please attach files under 10 MB.'); return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      state.pendingAttachment = { name: file.name, data: ev.target.result, type: file.type };
+      renderAttachmentArea();
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function viewPendingAttachment(){
+  if(!state.pendingAttachment) return;
+  const a = document.createElement('a');
+  a.href = state.pendingAttachment.data;
+  a.download = state.pendingAttachment.name;
+  a.click();
+}
+
+function removePendingAttachment(){
+  state.pendingAttachment = null;
+  renderAttachmentArea();
+}
+
+// Open attachment modal directly from PO card (outside edit modal)
+function openAttachModal(vendor, pi, e){
+  if(e) e.stopPropagation();
+  const po = state.vendors[vendor].pos[pi];
+  if(po.attachmentData){
+    // Download directly
+    const a = document.createElement('a');
+    a.href = po.attachmentData;
+    a.download = po.attachmentName || 'attachment';
+    a.click();
+  } else {
+    // Prompt to attach via edit
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg';
+    input.onchange = ev => {
+      const file = ev.target.files[0];
+      if(!file) return;
+      if(file.size > 10 * 1024 * 1024){ alert('File too large. Please attach files under 10 MB.'); return; }
+      const reader = new FileReader();
+      reader.onload = fe => {
+        po.attachmentData = fe.target.result;
+        po.attachmentName = file.name;
+        po.attachmentType = file.type;
+        save();
+        if(state.currentView==='dashboard') renderDashboard();
+        else renderPOManager();
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
+}
+
+// ─── EXPORT CSV ───────────────────────────────────────────────────────────────
+function exportCSV(vendor, pi){
+  const v = vendor || state.activeVendor;
+  const po = state.vendors[v].pos[pi];
+  const hdr='Vendor,SKU,Name,Art #,PO #,Category,Color,Sizing,Unit Price,S1,S2,S3,S4,S5,S6,S7,Units,PO Ex-Factory,Style Ex-Factory\n';
+  const rows=(po.rows||[]).map(r=>{
+    const szL=getSizeLabels(r.sizeType||'numeric');
+    const isDen=(r.sizeType||'numeric')==='denim';
+    return [v,r.sku,'"'+r.name+'"','"'+r.art+'"',po.num,po.category,r.color,
+      (r.sizeType==='alpha'?'Alpha':r.sizeType==='denim'?'Denim':'Numeric'),
+      (r.price!=null?r.price:''),
+      r.s0+' '+szL[0], r.s2+' '+szL[1], r.s4+' '+szL[2], r.s6+' '+szL[3], r.s8+' '+szL[4],
+      isDen?(r.s29||0)+' '+szL[5]:'', isDen?(r.s30||0)+' '+szL[6]:'',
+      r.units, po.date, (r.exf||po.date)
+    ].join(',');
+  }).join('\n');
+  const blob=new Blob([hdr+rows],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=v+' X AFLALO - PO '+po.num+'.csv';
+  a.click();
+}
+
+// ─── EXPORT PDF ───────────────────────────────────────────────────────────────
+async function exportPDFByVendor(vendor, pi){
+  if(!window.jspdf){ alert('PDF library loading, try again in a moment.'); return; }
+  const { jsPDF } = window.jspdf;
+  const po   = state.vendors[vendor].pos[pi];
+  const v    = vendor;
+  const rows = po.rows||[];
+
+  // ── Colors matching the app ──────────────────────────────────────────
+  const C = {
+    ivory:   [250, 250, 248],   // --ivory
+    cream:   [247, 245, 240],   // --cream
+    ink:     [26,  26,  24 ],   // --ink
+    inkMid:  [61,  61,  59 ],   // --ink-mid
+    inkLt:   [138, 138, 134],   // --ink-light
+    inkXlt:  [196, 196, 191],   // --ink-xlight
+    border:  [226, 224, 218],   // --border
+    borderLt:[237, 235, 230],   // --border-light
+    gold:    [184, 168, 130],   // --gold
+    lateRed: [139, 46,  46 ],
+    openBlue:[28,  58,  92 ],
+    compGreen:[44, 92,  58 ],
+    amber:   [107, 74,  26 ],
+  };
+
+  const doc   = new jsPDF({ orientation:'landscape', unit:'pt', format:'letter' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const ML = 44, MR = 44, MT = 36;
+  const contentW = pageW - ML - MR;
+  let y = MT;
+
+  const totalUnits   = rows.reduce((s,r)=>s+(parseInt(r.units)||0),0);
+  const usdCostPDF   = rows.filter(r=>r.price!=null&&(r.priceCurrency||'USD')==='USD').reduce((s,r)=>s+(parseFloat(r.price)||0)*(parseInt(r.units)||0),0);
+  const eurCostPDF   = rows.filter(r=>r.price!=null&&r.priceCurrency==='EUR').reduce((s,r)=>s+(parseFloat(r.price)||0)*(parseInt(r.units)||0),0);
+  const costStrPDF   = [usdCostPDF>0?'$'+usdCostPDF.toLocaleString('en-US',{minimumFractionDigits:2}):'', eurCostPDF>0?'\u20AC'+eurCostPDF.toLocaleString('en-US',{minimumFractionDigits:2}):''].filter(Boolean).join(' + ');
+  const hasCostPDF   = costStrPDF.length > 0;
+  const totalCostPDF = usdCostPDF + eurCostPDF; // for legacy checks
+  const st = po.status==='complete'?'RECEIVED': isLate(po)?'LATE': isUpcoming(po)?'UPCOMING':'OPEN';
+  const stColor = {RECEIVED:C.compGreen, LATE:C.lateRed, UPCOMING:C.amber, OPEN:C.openBlue}[st];
+
+  // ── Full-page ivory background ───────────────────────────────────────
+  doc.setFillColor(...C.ivory);
+  doc.rect(0, 0, pageW, pageH, 'F');
+
+  // ── Thin top border bar ──────────────────────────────────────────────
+  doc.setFillColor(...C.ink);
+  doc.rect(0, 0, pageW, 3, 'F');
+
+  // ── AFLALO wordmark (top left) ───────────────────────────────────────
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...C.inkLt);
+  doc.setCharSpace(3);
+  doc.text('AFLALO', ML, y + 12);
+  doc.setCharSpace(0);
+
+  // ── Page number (top right) ──────────────────────────────────────────
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7);
+  doc.setTextColor(...C.inkLt);
+  const pgLabel = 'PRODUCTION ORDER';
+  doc.text(pgLabel, pageW - MR - doc.getTextWidth(pgLabel), y + 12);
+
+  y += 28;
+
+  // ── Thin rule ────────────────────────────────────────────────────────
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.4);
+  doc.line(ML, y, pageW - MR, y);
+  y += 20;
+
+  // ── Main title: VENDOR X AFLALO ──────────────────────────────────────
+  const titleText = v + ' \u00D7 AFLALO';
+  doc.setFont('times','italic');   // closest to EB Garamond in built-in fonts
+  doc.setFontSize(28);
+  doc.setTextColor(...C.ink);
+  doc.text(titleText, ML, y);
+  y += 6;
+
+  // ── Status pill inline after title ──────────────────────────────────
+  const pillX = ML + doc.getTextWidth(titleText) + 12;
+  const pillY = y - 18;
+  doc.setFontSize(7);
+  doc.setFont('helvetica','bold');
+  doc.setCharSpace(1.5);
+  const pillLabel = st;
+  const pillW = doc.getTextWidth(pillLabel) + 12;
+  doc.setFillColor(...stColor.map(c=>Math.min(255,c+170)));
+  doc.setDrawColor(...stColor);
+  doc.setLineWidth(0.4);
+  doc.roundedRect(pillX, pillY - 8, pillW, 12, 1, 1, 'FD');
+  doc.setTextColor(...stColor);
+  doc.text(pillLabel, pillX + 6, pillY + 2);
+  doc.setCharSpace(0);
+
+  y += 10;
+
+  // ── Sub-rule ─────────────────────────────────────────────────────────
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.4);
+  doc.line(ML, y, pageW - MR, y);
+  y += 14;
+
+  // ── Meta block: two rows of key/value pairs ──────────────────────────
+  const meta1 = [
+    ['PO NUMBER', po.num||'—'],
+    ['VENDOR',    v],
+    ['CATEGORY',  po.category||'—'],
+    ['EX-FACTORY', po.date||'—'],
+    ['STYLES',    String(rows.length)],
+    ['TOTAL UNITS', String(totalUnits)],
+  ];
+  if(hasCostPDF) meta1.push(['TOTAL COST', costStrPDF]);
+  if(po.comments && po.comments.trim()) meta1.push(['NOTES', po.comments.trim()]);
+
+  const metaCols = meta1.length;
+  const metaColW = contentW / metaCols;
+
+  meta1.forEach((pair, i) => {
+    const mx = ML + i * metaColW;
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...C.inkLt);
+    doc.setCharSpace(1.2);
+    doc.text(pair[0], mx, y);
+    doc.setCharSpace(0);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...C.ink);
+    doc.text(pair[1], mx, y + 11, {maxWidth: metaColW - 4});
+  });
+
+  y += 28;
+
+  // ── Thin rule ────────────────────────────────────────────────────────
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.4);
+  doc.line(ML, y, pageW - MR, y);
+  y += 10;
+
+  // ── TABLE ─────────────────────────────────────────────────────────────
+  const hasPrice = rows.some(r=>r.price!=null);
+  const allAlpha   = rows.every(r=>(r.sizeType||'numeric')==='alpha');
+  const allDenim   = rows.every(r=>(r.sizeType||'numeric')==='denim');
+  const allNumeric = rows.every(r=>(r.sizeType||'numeric')==='numeric');
+  const hdrSzLabels = allAlpha?['XS','S','M','L','XL']: allDenim?['24','25','26','27','28','29','30']: allNumeric?['0','2','4','6','8']:['0/XS','2/S','4/M','6/L','8/XL'];
+
+  const headCols = ['SKU','STYLE NAME','ART # / FABRIC','COLOR'];
+  if(hasPrice) headCols.push('PRICE');
+  headCols.push(...hdrSzLabels, 'UNITS', 'EX-FACTORY');
+
+  const tableBody = rows.map(r=>{
+    const styleExf = r.exf && r.exf.trim();
+    const displayExf = styleExf && styleExf !== po.date ? styleExf + ' [S]' : (po.date||'—');
+    const isDenim = (r.sizeType||'numeric')==='denim';
+    const row = [r.sku||'', r.name||'', r.art||'', r.color||''];
+    if(hasPrice) row.push(r.price!=null? currSym(r.priceCurrency||'USD')+Number(r.price).toFixed(2):'—');
+    row.push(
+      r.s0?String(r.s0):'—',
+      r.s2?String(r.s2):'—',
+      r.s4?String(r.s4):'—',
+      r.s6?String(r.s6):'—',
+      r.s8?String(r.s8):'—'
+    );
+    if(isDenim){
+      row.push(r.s29?String(r.s29):'—', r.s30?String(r.s30):'—');
+    } else if(allDenim){
+      row.push('—','—');
+    }
+    row.push(String(r.units||0), displayExf);
+    return row;
+  });
+
+  // Column widths
+  const szCount  = allDenim ? 7 : 5;
+  const szColPt  = allDenim ? 20 : 24;
+  const exfColW  = 52;
+  const unitsColW = 30;
+  const priceColW = hasPrice ? 42 : 0;
+  const fixedW   = priceColW + szColPt*szCount + unitsColW + exfColW;
+  const flexW    = contentW - fixedW;
+  // Distribute flex space: SKU 18%, Name 28%, Art 34%, Color remainder
+  const skuW   = Math.floor(flexW * 0.18);
+  const nameW  = Math.floor(flexW * 0.28);
+  const artW   = Math.floor(flexW * 0.34);
+  const colorW = flexW - skuW - nameW - artW;
+
+  const colStyles = {};
+  let ci = 0;
+  colStyles[ci++] = {cellWidth: skuW,   overflow:'linebreak'};
+  colStyles[ci++] = {cellWidth: nameW,  overflow:'linebreak'};
+  colStyles[ci++] = {cellWidth: artW,   overflow:'linebreak'};
+  colStyles[ci++] = {cellWidth: Math.max(30, colorW), overflow:'linebreak'};
+  if(hasPrice) colStyles[ci++] = {cellWidth: priceColW, halign:'right'};
+  for(let i=0;i<szCount;i++) colStyles[ci++] = {cellWidth:szColPt, halign:'center'};
+  colStyles[ci++] = {cellWidth: unitsColW, halign:'center', fontStyle:'bold'};
+  colStyles[ci++] = {cellWidth: exfColW,   overflow:'linebreak'};
+
+  doc.autoTable({
+    startY: y,
+    head:   [headCols],
+    body:   tableBody,
+    margin: { left:ML, right:MR },
+    styles: {
+      font:        'helvetica',
+      fontSize:    7,
+      cellPadding: {top:5, right:4, bottom:5, left:4},
+      overflow:    'linebreak',
+      valign:      'middle',
+      textColor:   C.inkMid,
+      lineColor:   C.borderLt,
+      lineWidth:   0.3,
+      fillColor:   C.ivory,
+    },
+    headStyles: {
+      fillColor:   C.cream,
+      textColor:   C.inkLt,
+      fontSize:    5.5,
+      fontStyle:   'normal',
+      halign:      'left',
+      cellPadding: {top:4, right:4, bottom:4, left:4},
+      lineColor:   C.border,
+      lineWidth:   0.4,
+    },
+    alternateRowStyles: {
+      fillColor: C.cream,
+    },
+    didParseCell: function(data){
+      if(data.section==='body'){
+        const szOffset = allDenim ? 7 : 5;
+        const baseCols = 4 + (hasPrice?1:0);
+        const unitsIdx = baseCols + szOffset;
+        const exfIdx   = baseCols + szOffset + 1;
+        if(data.column.index === unitsIdx){
+          data.cell.styles.textColor = C.ink;
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fontSize  = 8;
+        }
+        if(data.column.index === exfIdx && data.cell.raw && String(data.cell.raw).includes('[S]')){
+          data.cell.styles.textColor = C.amber;
+        }
+      }
+    },
+    columnStyles: colStyles,
+    didDrawPage: function(data){
+      // Re-draw ivory background on subsequent pages
+      if(data.pageNumber > 1){
+        doc.setFillColor(...C.ivory);
+        doc.rect(0, 0, pageW, pageH, 'F');
+        doc.setFillColor(...C.ink);
+        doc.rect(0, 0, pageW, 3, 'F');
+      }
+      // Footer every page
+      doc.setDrawColor(...C.border);
+      doc.setLineWidth(0.3);
+      doc.line(ML, pageH-26, pageW-MR, pageH-26);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(6.5);
+      doc.setTextColor(...C.inkLt);
+      doc.setCharSpace(0.8);
+      doc.text(v+' \u00D7 AFLALO', ML, pageH-14);
+      const pgStr = 'PO #'+po.num+'  \u00B7  Page '+data.pageNumber;
+      doc.text(pgStr, pageW-MR-doc.getTextWidth(pgStr)-4, pageH-14);
+      doc.setCharSpace(0);
+    }
+  });
+
+  // ── Summary bar below table ───────────────────────────────────────────
+  const summaryY = doc.lastAutoTable.finalY;
+  doc.setFillColor(...C.cream);
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.3);
+  doc.rect(ML, summaryY, contentW, 22, 'FD');
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7);
+  doc.setTextColor(...C.inkLt);
+  doc.setCharSpace(0.8);
+  let summaryParts = [
+    'TOTAL STYLES: '+rows.length,
+    'TOTAL UNITS: '+totalUnits,
+  ];
+  if(hasCostPDF) summaryParts.push('TOTAL COST: '+costStrPDF);
+  summaryParts.push('STATUS: '+st);
+  const summaryText = summaryParts.join('   \u00B7   ');
+  doc.text(summaryText, ML+10, summaryY+14);
+  doc.setCharSpace(0);
+
+  // ── Merge attachment as extra page(s) if present ─────────────────────
+  const filename = v+' X AFLALO - PO '+po.num+'.pdf';
+  const poPdfBytes = doc.output('arraybuffer');
+
+  if(po.attachmentData){
+    const attType = (po.attachmentType||'').toLowerCase();
+    const attName = (po.attachmentName||'').toLowerCase();
+    const isPDF   = attType.includes('pdf') || attName.endsWith('.pdf');
+    const isImg   = attType.includes('image') || /\.(png|jpg|jpeg|gif|webp)$/i.test(attName);
+
+    if(isPDF && window.PDFLib){
+      // Use pdf-lib to merge the two PDFs
+      try{
+        const { PDFDocument } = PDFLib;
+        const mergedDoc = await PDFDocument.create();
+
+        // Copy pages from PO PDF
+        const poDoc = await PDFDocument.load(poPdfBytes);
+        const poCopied = await mergedDoc.copyPages(poDoc, poDoc.getPageIndices());
+        poCopied.forEach(p => mergedDoc.addPage(p));
+
+        // Convert base64 attachment to ArrayBuffer
+        const b64 = po.attachmentData.split(',')[1] || po.attachmentData;
+        const attBytes = Uint8Array.from(atob(b64), c=>c.charCodeAt(0)).buffer;
+        const attDoc = await PDFDocument.load(attBytes);
+        const attCopied = await mergedDoc.copyPages(attDoc, attDoc.getPageIndices());
+        attCopied.forEach(p => mergedDoc.addPage(p));
+
+        const mergedBytes = await mergedDoc.save();
+        const blob = new Blob([mergedBytes], {type:'application/pdf'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        return;
+      }catch(err){
+        console.warn('PDF merge failed, falling back to separate download:', err);
+      }
+    }
+
+    if(isImg){
+      // Add a new landscape page with the image centred
+      try{
+        const { PDFDocument } = PDFLib;
+        const mergedDoc = await PDFDocument.create();
+
+        const poDoc = await PDFDocument.load(poPdfBytes);
+        const poCopied = await mergedDoc.copyPages(poDoc, poDoc.getPageIndices());
+        poCopied.forEach(p => mergedDoc.addPage(p));
+
+        const b64 = po.attachmentData.split(',')[1] || po.attachmentData;
+        const imgBytes = Uint8Array.from(atob(b64), c=>c.charCodeAt(0));
+        let pdfImg;
+        if(attType.includes('png') || attName.endsWith('.png')){
+          pdfImg = await mergedDoc.embedPng(imgBytes);
+        } else {
+          pdfImg = await mergedDoc.embedJpg(imgBytes);
+        }
+        const { width:iw, height:ih } = pdfImg.scale(1);
+        // Landscape letter in points: 792 x 612
+        const pgW = 792, pgH = 612, pad = 40;
+        const maxW = pgW - pad*2, maxH = pgH - pad*2;
+        const scale = Math.min(maxW/iw, maxH/ih, 1);
+        const dw = iw*scale, dh = ih*scale;
+        const imgPage = mergedDoc.addPage([pgW, pgH]);
+        imgPage.drawImage(pdfImg, { x:(pgW-dw)/2, y:(pgH-dh)/2, width:dw, height:dh });
+
+        const mergedBytes = await mergedDoc.save();
+        const blob = new Blob([mergedBytes], {type:'application/pdf'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        return;
+      }catch(err){
+        console.warn('Image embed failed, falling back:', err);
+      }
+    }
+
+    // Non-PDF/image attachment: download PO PDF normally, then trigger attachment download separately
+    doc.save(filename);
+    setTimeout(()=>{
+      const a = document.createElement('a');
+      a.href = po.attachmentData;
+      a.download = po.attachmentName || 'attachment';
+      a.click();
+    }, 800);
+    return;
+  }
+
+  // No attachment — just save normally
+  doc.save(filename);
+}
+
+// ─── COMMENT HELPERS ──────────────────────────────────────────────────────────
+function toggleDashComment(vendor, pi){
+  // Toggle the inline editor on the PO list row
+  const editor = document.getElementById('dash-cmtedit-'+vendor+'-'+pi);
+  const row    = document.getElementById('dash-cmtrow-'+vendor+'-'+pi);
+  if(!editor) { toggleTodoEditor(vendor, pi); return; }
+  const isOpen = editor.style.display !== 'none';
+  editor.style.display = isOpen ? 'none' : 'block';
+  if(row) row.style.display = isOpen ? '' : 'none';
+  if(!isOpen){
+    const inp = document.getElementById('dash-cmtinput-'+vendor+'-'+pi);
+    if(inp){ inp.value = state.vendors[vendor].pos[pi].comments||''; inp.focus(); }
+  }
+}
+function toggleTodoEditor(vendor, pi){
+  const editor = document.getElementById('dash-cmtedit2-'+vendor+'-'+pi);
+  if(!editor) return;
+  const isOpen = editor.style.display !== 'none';
+  editor.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen){
+    const inp = document.getElementById('dash-cmtinput2-'+vendor+'-'+pi);
+    if(inp){ inp.value = state.vendors[vendor].pos[pi].comments||''; inp.focus(); }
+  }
+}
+function saveDashComment(vendor, pi){
+  const inp = document.getElementById('dash-cmtinput-'+vendor+'-'+pi);
+  if(inp){ state.vendors[vendor].pos[pi].comments = inp.value.trim(); save(); }
+  renderDashboard();
+}
+function saveDashComment2(vendor, pi){
+  const inp = document.getElementById('dash-cmtinput2-'+vendor+'-'+pi);
+  if(inp){ state.vendors[vendor].pos[pi].comments = inp.value.trim(); save(); }
+  renderDashboard();
+}
+function clearDashComment(vendor, pi){
+  state.vendors[vendor].pos[pi].comments = '';
+  save(); renderDashboard();
+}
+function toggleInlineComment(vendor, pi){
+  const id = 'cmt-'+vendor+'-'+pi;
+  const editor = document.getElementById(id+'-editor');
+  if(!editor) return;
+  const isOpen = editor.style.display !== 'none';
+  editor.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen){ const inp = document.getElementById(id+'-input'); if(inp) inp.focus(); }
+}
+
+function saveInlineComment(vendor, pi){
+  const id = 'cmt-'+vendor+'-'+pi;
+  const inp = document.getElementById(id+'-input');
+  if(!inp) return;
+  state.vendors[vendor].pos[pi].comments = inp.value.trim();
+  save();
+  renderPOManager();
+}
+
+function clearComment(vendor, pi){
+  state.vendors[vendor].pos[pi].comments = '';
+  save();
+  renderPOManager();
+}
+
+// ─── MODAL HELPERS ────────────────────────────────────────────────────────────
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+// Close on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click', e=>{ if(e.target===el) el.classList.remove('open'); });
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderSidebar();
+showView('dashboard');
+</script>
+</body>
+</html>
